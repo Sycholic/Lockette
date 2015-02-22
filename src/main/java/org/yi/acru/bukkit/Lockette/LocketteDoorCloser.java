@@ -20,16 +20,14 @@ import org.bukkit.block.Block;
 
 
 public class LocketteDoorCloser implements Runnable{
-	private static Lockette					plugin;
-	private static int						doorTask = -1;
+	private static Lockette plugin;
+	private static int doorTask = -1;
 	private final PriorityQueue<closeTask>	closeTaskList = new PriorityQueue<closeTask>();
-	
 	
 	
 	public LocketteDoorCloser(Lockette instance){
 		plugin = instance;
 	}
-	
 	
 	protected boolean start(){
 		if(doorTask != -1) return(false);
@@ -67,8 +65,8 @@ public class LocketteDoorCloser implements Runnable{
 	public void run(){
 		if(closeTaskList.isEmpty()) return;
 		
-		Date		time = new Date();
-		closeTask	door;
+		Date time = new Date();
+		closeTask door;
 		
 		while(time.after(closeTaskList.peek().time)){
 			door = closeTaskList.poll();
@@ -91,12 +89,12 @@ public class LocketteDoorCloser implements Runnable{
 		if(list == null) return;
 		if(list.isEmpty()) return;
 		
-		Iterator<closeTask>	it;
-		Iterator<Block>		itb;
+		Iterator<closeTask> it;
+		Iterator<Block>	itb;
 		
-		closeTask	task;
-		Block		block;
-		World		world = list.get(0).getWorld();
+		closeTask task;
+		Block block;
+		World world = list.get(0).getWorld();
 		
 		// Check each item in the task list for duplicates.
 		it = closeTaskList.iterator();
@@ -144,12 +142,12 @@ public class LocketteDoorCloser implements Runnable{
 	
 	
 	protected class closeTask implements Comparable<closeTask>{
-		Date		time;
-		World		world;
-		int			x, y, z;
-		boolean		effect;
+		Date time;
+		World world;
+		int x, y, z;
+		boolean	effect;
 		
-		
+
 		public closeTask(Date taskTime, Block block, boolean taskEffect){
 			time = taskTime;
 			world = block.getWorld();

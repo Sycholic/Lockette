@@ -23,7 +23,7 @@ import org.bukkit.event.block.SignChangeEvent;
 
 
 public class LockettePrefixListener implements Listener{
-	private static Lockette		plugin;
+	private static Lockette	plugin;
 	
 	
 	public LockettePrefixListener(Lockette instance){
@@ -33,7 +33,6 @@ public class LockettePrefixListener implements Listener{
 	
 	protected void registerEvents(){
 		PluginManager	pm = plugin.getServer().getPluginManager();
-		
 		pm.registerEvents(this, plugin);
 	}
 	
@@ -44,11 +43,11 @@ public class LockettePrefixListener implements Listener{
 	
 	@EventHandler(priority = EventPriority.LOW, ignoreCancelled = true)
 	public void onSignChange(SignChangeEvent event){
-		Block		block = event.getBlock();
-		Player		player = event.getPlayer();
-		int         blockType = block.getTypeId();
-		boolean		typeWallSign = (blockType == Material.WALL_SIGN.getId());
-		boolean		typeSignPost = (blockType == Material.SIGN_POST.getId());
+		Block block = event.getBlock();
+		Player player = event.getPlayer();
+		int blockType = block.getTypeId();
+		boolean	typeWallSign = (blockType == Material.WALL_SIGN.getId());
+		boolean	typeSignPost = (blockType == Material.SIGN_POST.getId());
 		
 		
 		// Check to see if it is a sign change packet for an existing protected sign.
@@ -56,8 +55,8 @@ public class LockettePrefixListener implements Listener{
 		// Needed again as of build 1093...  :<
 		
 		if(typeWallSign){
-			Sign		sign = (Sign) block.getState();
-			String		text = ChatColor.stripColor(sign.getLine(0));
+			Sign sign = (Sign) block.getState();
+			String text = ChatColor.stripColor(sign.getLine(0));
 			
 			if(text.equalsIgnoreCase("[Private]") || text.equalsIgnoreCase(Lockette.altPrivate) || text.equalsIgnoreCase("[More Users]") || text.equalsIgnoreCase(Lockette.altMoreUsers)){
 				// Okay, sign already exists and someone managed to send an event to replace.

@@ -83,9 +83,6 @@ public class Lockette extends PluginCore {
 	}
 	
 	
-	public void onLoad(){}
-	
-	
 	public void onEnable(){
 		if(enabled) return;
 		
@@ -139,17 +136,12 @@ public class Lockette extends PluginCore {
 		}
 		
 		// Load properties and strings.
-		
 		loadProperties(false);
 		
-		
 		// Load external permission/group plugins.
-		
 		super.onEnable();
-		
-		
-		// Reg us some events yo!
-		
+
+		// Reg us some events yo!	
 		if(!registered){
 			blockListener.registerEvents();
 			entityListener.registerEvents();
@@ -160,9 +152,7 @@ public class Lockette extends PluginCore {
 			registered = true;
 		}
 		
-		
 		// All done.
-		
 		log.info("[" + getDescription().getName() + "] Ready to protect your containers.");
 		enabled = true;
 	}

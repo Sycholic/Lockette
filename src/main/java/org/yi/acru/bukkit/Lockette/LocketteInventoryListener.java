@@ -8,7 +8,6 @@
 package org.yi.acru.bukkit.Lockette;
 
 import java.util.*;
-import org.bukkit.*;
 import org.bukkit.block.*;
 import org.bukkit.event.*;
 import org.bukkit.event.inventory.*;

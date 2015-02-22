@@ -46,14 +46,11 @@ public class LocketteBlockListener implements Listener {
 	private static Lockette plugin;
 
 	public LocketteBlockListener(Lockette instance) {
-
 		plugin = instance;
 	}
 
 	protected void registerEvents() {
-
 		PluginManager pm = plugin.getServer().getPluginManager();
-
 		pm.registerEvents(this, plugin);
 	}
 

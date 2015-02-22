@@ -33,7 +33,7 @@ import org.yi.acru.bukkit.BlockUtil;
 
 
 public class LockettePlayerListener implements Listener{
-	private static Lockette		plugin;
+	private static Lockette	plugin;
 	
 	public LockettePlayerListener(Lockette instance){
 		plugin = instance;
@@ -42,7 +42,6 @@ public class LockettePlayerListener implements Listener{
 	
 	protected void registerEvents(){
 		PluginManager	pm = plugin.getServer().getPluginManager();
-
 		pm.registerEvents(this, plugin);
 	}
 	
@@ -105,10 +104,10 @@ public class LockettePlayerListener implements Listener{
 				else if(block.getTypeId() != Material.WALL_SIGN.getId()){plugin.localizedMessage(player, null, "msg-error-edit"); return;}
 				
 
-				Sign		sign = (Sign) block.getState();
-				Sign		owner = sign;
-				String		text = sign.getLine(0).replaceAll("(?i)\u00A7[0-F]", "").toLowerCase();
-				boolean		privateSign;
+				Sign sign = (Sign) block.getState();
+				Sign owner = sign;
+				String text = sign.getLine(0).replaceAll("(?i)\u00A7[0-F]", "").toLowerCase();
+				boolean privateSign;
 
 				// Check if it is our sign that is selected.
 				
@@ -131,8 +130,7 @@ public class LockettePlayerListener implements Listener{
 					
 					// Disallow editing [Private] line 1 here.
 					if(!Lockette.debugMode){
-						if (line <= 0)	
-						return;
+						if (line <= 0)	return;
 						if (line <= 1) {
 							// the onwer is allowed to change his/her name with color as long as color tag is true
 							if (privateSign &&

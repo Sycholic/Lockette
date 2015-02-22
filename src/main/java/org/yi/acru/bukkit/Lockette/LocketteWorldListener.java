@@ -23,7 +23,7 @@ import org.bukkit.event.world.StructureGrowEvent;
 import org.yi.acru.bukkit.BlockUtil;
 
 public class LocketteWorldListener implements Listener{
-	private static Lockette		plugin;
+	private static Lockette	plugin;
 	
 	
 	public LocketteWorldListener(Lockette instance){
@@ -33,7 +33,6 @@ public class LocketteWorldListener implements Listener{
 	
 	protected void registerEvents(){
 		PluginManager	pm = plugin.getServer().getPluginManager();
-		
 		pm.registerEvents(this, plugin);
 	}
 	
@@ -86,4 +85,3 @@ public class LocketteWorldListener implements Listener{
 		}
 	}
 }
-

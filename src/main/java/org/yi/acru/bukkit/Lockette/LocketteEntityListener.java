@@ -20,7 +20,7 @@ import org.yi.acru.bukkit.BlockUtil;
 
 
 public class LocketteEntityListener implements Listener{
-	private static Lockette		plugin;
+	private static Lockette	plugin;
 	
 	
 	public LocketteEntityListener(Lockette instance){
@@ -29,8 +29,7 @@ public class LocketteEntityListener implements Listener{
 	
 	
 	protected void registerEvents(){
-		PluginManager	pm = plugin.getServer().getPluginManager();
-		
+		PluginManager pm = plugin.getServer().getPluginManager();
 		pm.registerEvents(this, plugin);
 	}
 	
@@ -44,8 +43,8 @@ public class LocketteEntityListener implements Listener{
 		if(event.isCancelled()) return;
 		
 		//List<Block> blockList = event.blockList();
-		int			x;//, count = event.blockList().size();
-		Block		block;
+		int x;//, count = event.blockList().size();
+		Block block;
 		
 		
 		// Check the block list for any protected blocks, and cancel the event if any are found.
