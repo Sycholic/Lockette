@@ -77,27 +77,30 @@ public class LocketteBlockListener implements Listener {
         if (event.getSource().getHolder() instanceof HopperMinecart & protectedDest) {
             //Lockette.log.info("Canceling Minecart + protectedDest:" + protectedDest);
             event.setCancelled(true);
+            return;
         }
-<<<<<<< HEAD
-        else if (event.getDestination().getHolder() instanceof HopperMinecart & protectedSource) {
+        if (event.getDestination().getHolder() instanceof HopperMinecart & protectedSource) {
             //Lockette.log.info("Canceling Minecart + protectedSource:" + protectedSource);
-=======
+            event.setCancelled(true);
+            return;
+        }
         if (event.getDestination().getHolder() instanceof HopperMinecart & protectedSource) {
             //Lockette.log.info("Canceling Minecart + pSrc:" + pSrc);
->>>>>>> origin/master
             event.setCancelled(true);
+            return;
         }
-        else if (event.getSource().getHolder() instanceof StorageMinecart & protectedDest) {
+        if (event.getSource().getHolder() instanceof StorageMinecart & protectedDest) {
             //Lockette.log.info("Canceling Minecart + protectedDest:" + protectedDest);
             event.setCancelled(true);
+            return;
         }
-<<<<<<< HEAD
-        else if (event.getDestination().getHolder() instanceof StorageMinecart & protectedSource) {
+        if (event.getDestination().getHolder() instanceof StorageMinecart & protectedSource) {
             //Lockette.log.info("Canceling Minecart + protectedSource:" + protectedSource);
-=======
+            event.setCancelled(true);
+            return;
+        }
         if (event.getDestination().getHolder() instanceof StorageMinecart & protectedSource) {
             //Lockette.log.info("Canceling Minecart + pSrc:" + pSrc);
->>>>>>> origin/master
             event.setCancelled(true);
         }
     }
