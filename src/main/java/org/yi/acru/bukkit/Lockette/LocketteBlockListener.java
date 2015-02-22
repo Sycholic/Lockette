@@ -3,40 +3,30 @@
 // Distributed under the The Non-Profit Open Software License version 3.0 (NPOSL-3.0)
 // http://www.opensource.org/licenses/NOSL3.0
 //
-
 package org.yi.acru.bukkit.Lockette;
-
 // Imports.
 import java.util.List;
-import java.util.logging.Level;
-import java.util.logging.Logger;
-import java.util.Arrays;
 
-
+import org.bukkit.block.Block;
+import org.bukkit.block.BlockFace;
+import org.bukkit.block.BlockState;
+import org.bukkit.block.Sign;
 import org.bukkit.ChatColor;
-import org.bukkit.Material;
-//import org.bukkit.block.Block;
-//import org.bukkit.block.BlockFace;
-//import org.bukkit.block.Chest;
-//import org.bukkit.block.Hopper;
-import org.bukkit.block.*;
-import org.bukkit.entity.Player;
 import org.bukkit.entity.minecart.HopperMinecart;
 import org.bukkit.entity.minecart.StorageMinecart;
-import org.bukkit.event.EventHandler;
-import org.bukkit.event.EventPriority;
-import org.bukkit.event.Listener;
-import org.bukkit.plugin.PluginManager;
-
+import org.bukkit.entity.Player;
 import org.bukkit.event.block.BlockBreakEvent;
-//import org.bukkit.event.block.BlockDamageEvent;
 import org.bukkit.event.block.BlockPistonExtendEvent;
 import org.bukkit.event.block.BlockPistonRetractEvent;
 import org.bukkit.event.block.BlockPlaceEvent;
 import org.bukkit.event.block.BlockRedstoneEvent;
 import org.bukkit.event.block.SignChangeEvent;
-
 import org.bukkit.event.inventory.InventoryMoveItemEvent;
+import org.bukkit.Material;
+import org.bukkit.event.EventHandler;
+import org.bukkit.event.EventPriority;
+import org.bukkit.event.Listener;
+import org.bukkit.plugin.PluginManager;
 
 import org.yi.acru.bukkit.PluginCore;
 import org.yi.acru.bukkit.BlockUtil;
@@ -63,18 +53,15 @@ public class LocketteBlockListener implements Listener {
         Boolean protectedDest = false;
         Boolean protectedDoubleChestLeft = false;
         Boolean protectedDoubleChestRight = false;
-        if ((event.getSource().getHolder()) instanceof BlockState) {
+        if ((event.getSource().getHolder()) instanceof BlockState)
             protectedSource = (Lockette.isProtected(((BlockState) event.getSource().getHolder()).getBlock()));
-            //Lockette.log.info("Blockstate output is protected :" + protectedSource);
-        }
-        if ((event.getDestination().getHolder()) instanceof BlockState) {
+        if ((event.getDestination().getHolder()) instanceof BlockState)
             protectedDest = (Lockette.isProtected(((BlockState) event.getDestination().getHolder()).getBlock()));
-            //Lockette.log.info("Blockstate input is protected :" + protectedDest);
-        }
         if (protectedSource != protectedDest) {
-            //Lockette.log.info("Canceling because either the source or destination is protected");
             event.setCancelled(true);
+            return;//Booya thats like 90% of the noise...
         }
+        
         //  Handle DoubleChests here now.. not completed but getting close... BROKEN SO FAR...
         /*if ((event.getSource().getHolder()) instanceof DoubleChest) {
             if (Lockette.isProtected(((BlockState)(((DoubleChest) event.getSource()).getLeftSide().getInventory().getHolder())).getBlock())) {
@@ -91,16 +78,26 @@ public class LocketteBlockListener implements Listener {
             //Lockette.log.info("Canceling Minecart + protectedDest:" + protectedDest);
             event.setCancelled(true);
         }
+<<<<<<< HEAD
         else if (event.getDestination().getHolder() instanceof HopperMinecart & protectedSource) {
             //Lockette.log.info("Canceling Minecart + protectedSource:" + protectedSource);
+=======
+        if (event.getDestination().getHolder() instanceof HopperMinecart & protectedSource) {
+            //Lockette.log.info("Canceling Minecart + pSrc:" + pSrc);
+>>>>>>> origin/master
             event.setCancelled(true);
         }
         else if (event.getSource().getHolder() instanceof StorageMinecart & protectedDest) {
             //Lockette.log.info("Canceling Minecart + protectedDest:" + protectedDest);
             event.setCancelled(true);
         }
+<<<<<<< HEAD
         else if (event.getDestination().getHolder() instanceof StorageMinecart & protectedSource) {
             //Lockette.log.info("Canceling Minecart + protectedSource:" + protectedSource);
+=======
+        if (event.getDestination().getHolder() instanceof StorageMinecart & protectedSource) {
+            //Lockette.log.info("Canceling Minecart + pSrc:" + pSrc);
+>>>>>>> origin/master
             event.setCancelled(true);
         }
     }
