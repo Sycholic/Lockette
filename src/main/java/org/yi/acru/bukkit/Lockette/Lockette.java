@@ -3,10 +3,7 @@
 // Distributed under the The Non-Profit Open Software License version 3.0 (NPOSL-3.0)
 // http://www.opensource.org/licenses/NOSL3.0
 //
-
-
 package org.yi.acru.bukkit.Lockette;
-
 
 // Imports.
 import java.io.File;
@@ -44,1914 +41,2013 @@ import java.util.*;
 import org.json.simple.*;
 import org.json.simple.parser.*;
 
-
 public class Lockette extends PluginCore {
-	static boolean DEBUG = false;
-	
-	private static Lockette					plugin;
-	private static boolean					enabled = false;
-	
-	private static boolean					uuidSupport = false;
-	private static boolean					registered = false;
-	private final LocketteBlockListener		blockListener = new LocketteBlockListener(this);
-	private final LocketteEntityListener	entityListener = new LocketteEntityListener(this);
-	private final LockettePlayerListener	playerListener = new LockettePlayerListener(this);
-	private final LockettePrefixListener	prefixListener = new LockettePrefixListener(this);
-	private final LocketteWorldListener		worldListener = new LocketteWorldListener(this);
-	private final LocketteInventoryListener	inventoryListener = new LocketteInventoryListener(this);	
-	protected final LocketteDoorCloser		doorCloser = new LocketteDoorCloser(this);
-	
-	protected static boolean				explosionProtectionAll, rotateChests;
-	protected static boolean				adminSnoop, adminBypass, adminBreak;
-	protected static boolean				protectDoors, protectTrapDoors, usePermissions;
-	protected static boolean				directPlacement, colorTags, debugMode;
-	protected static boolean				blockHopper = false;	
-	protected static int					defaultDoorTimer;
-	protected static String					broadcastSnoopTarget, broadcastBreakTarget, broadcastReloadTarget;
-	
-	protected static boolean				msgUser, msgOwner, msgAdmin, msgError, msgHelp;
-	protected static String					altPrivate, altMoreUsers, altEveryone, altOperators, altTimer, altFee;
-	protected static List<Object>			customBlockList = null, disabledPluginList = null;
-	
-	protected static FileConfiguration			strings = null;
-	protected final HashMap<String, Block>	playerList = new HashMap<String, Block>();
 
-	private static final String META_KEY = "LocketteUUIDs";
+    static boolean DEBUG = false;
 
-	public Lockette(){
-		plugin = this;
-	}
-	
-	
-        @Override
-	public void onEnable(){
-		if(enabled) return;
-		
-		log.info("[" + getDescription().getName() + "] Version " + this.getDescription().getVersion() + " is being enabled!  Yay!  (Core version " + getCoreVersion() + ")");
-		
-		
-		// Check build version.
-		
-		final int	recBuild = 2771;
-		final int	minBuild = 2735;
-		int			printBuild;
-		float		build = getBuildVersion();
-		
-		if((build > 399) && (build < 400)) printBuild = (int) ((build - 399) * 100);
-		else printBuild = (int) build;
-		
-		//if((printBuild >= 45) && (printBuild <= 49)) log.info("[" + getDescription().getName() + "] Ignore the warning about using the stupidly long constructor!");
+    private static Lockette plugin;
+    private static boolean enabled = false;
+
+    private static boolean uuidSupport = false;
+    private static boolean registered = false;
+    private final LocketteBlockListener blockListener = new LocketteBlockListener(this);
+    private final LocketteEntityListener entityListener = new LocketteEntityListener(this);
+    private final LockettePlayerListener playerListener = new LockettePlayerListener(this);
+    private final LockettePrefixListener prefixListener = new LockettePrefixListener(this);
+    private final LocketteWorldListener worldListener = new LocketteWorldListener(this);
+    private final LocketteInventoryListener inventoryListener = new LocketteInventoryListener(this);
+    protected final LocketteDoorCloser doorCloser = new LocketteDoorCloser(this);
+
+    protected static boolean explosionProtectionAll, rotateChests;
+    protected static boolean adminSnoop, adminBypass, adminBreak;
+    protected static boolean protectDoors, protectTrapDoors, usePermissions;
+    protected static boolean directPlacement, colorTags, debugMode;
+    protected static boolean blockHopper = false;
+    protected static int defaultDoorTimer;
+    protected static String broadcastSnoopTarget, broadcastBreakTarget, broadcastReloadTarget;
+
+    protected static boolean msgUser, msgOwner, msgAdmin, msgError, msgHelp;
+    protected static String altPrivate, altMoreUsers, altEveryone, altOperators, altTimer, altFee;
+    protected static List<Object> customBlockList = null, disabledPluginList = null;
+
+    protected static FileConfiguration strings = null;
+    protected final HashMap<String, Block> playerList = new HashMap<String, Block>();
+
+    private static final String META_KEY = "LocketteUUIDs";
+
+    public Lockette() {
+        plugin = this;
+    }
+
+    @Override
+    public void onEnable() {
+        if (enabled) {
+            return;
+        }
+
+        log.info("[" + getDescription().getName() + "] Version " + this.getDescription().getVersion() + " is being enabled!  Yay!  (Core version " + getCoreVersion() + ")");
+
+        // Check build version.
+        final int recBuild = 2771;
+        final int minBuild = 2735;
+        int printBuild;
+        float build = getBuildVersion();
+
+        if ((build > 399) && (build < 400)) {
+            printBuild = (int) ((build - 399) * 100);
+        } else {
+            printBuild = (int) build;
+        }
+
+        //if((printBuild >= 45) && (printBuild <= 49)) log.info("[" + getDescription().getName() + "] Ignore the warning about using the stupidly long constructor!");
 		/*
-		if(build == 0){
-			log.warning("[" + getDescription().getName() + "] Craftbukkit build unrecognized, please be sure you have build [" + recBuild + "] or greater.");
-		}
-		else if(build < minBuild){
-			log.severe("[" + getDescription().getName() + "] Detected craftbukkit build [" + printBuild + "], but requires requires build [" + minBuild + "] or greater!");
-			log.severe("[" + getDescription().getName() + "] Aborting enable!");
-			return;
-		}
-		else if(build < recBuild){
-			log.warning("[" + getDescription().getName() + "] Detected craftbukkit build [" + printBuild + "], but the recommended build is [" + recBuild + "] or greater.");
-		}
-		else if((build >= 605) && (build <= 612)){
-			log.warning("[" + getDescription().getName() + "] Detected craftbukkit build [" + printBuild + "], but this build is buggy!  Please upgrade to build 617 or greater.");
-		}
-		else if((build >= 685) && (build <= 703)){
-			log.warning("[" + getDescription().getName() + "] Detected craftbukkit build [" + printBuild + "], but this build is buggy!  Please upgrade to build 704 or greater.");
-		}
-		else{
-			log.info("[" + getDescription().getName() + "] Detected craftbukkit build [" + printBuild + "] ok.");
-		}
-		*/
+         if(build == 0){
+         log.warning("[" + getDescription().getName() + "] Craftbukkit build unrecognized, please be sure you have build [" + recBuild + "] or greater.");
+         }
+         else if(build < minBuild){
+         log.severe("[" + getDescription().getName() + "] Detected craftbukkit build [" + printBuild + "], but requires requires build [" + minBuild + "] or greater!");
+         log.severe("[" + getDescription().getName() + "] Aborting enable!");
+         return;
+         }
+         else if(build < recBuild){
+         log.warning("[" + getDescription().getName() + "] Detected craftbukkit build [" + printBuild + "], but the recommended build is [" + recBuild + "] or greater.");
+         }
+         else if((build >= 605) && (build <= 612)){
+         log.warning("[" + getDescription().getName() + "] Detected craftbukkit build [" + printBuild + "], but this build is buggy!  Please upgrade to build 617 or greater.");
+         }
+         else if((build >= 685) && (build <= 703)){
+         log.warning("[" + getDescription().getName() + "] Detected craftbukkit build [" + printBuild + "], but this build is buggy!  Please upgrade to build 704 or greater.");
+         }
+         else{
+         log.info("[" + getDescription().getName() + "] Detected craftbukkit build [" + printBuild + "] ok.");
+         }
+         */
+        String bukkitVersion = Bukkit.getServer().getClass().getName().split("\\.")[3];
+        float bukkitver = Float.parseFloat(bukkitVersion.substring(1, 4).replace("_", "."));
+        float bukkitminver = 1.8F;
 
-		String bukkitVersion = Bukkit.getServer().getClass().getName().split("\\.")[3];
-		float bukkitver = Float.parseFloat(bukkitVersion.substring(1, 4).replace("_", "."));
-		float bukkitminver = 1.8F;
-		
-		if (bukkitver < bukkitminver) {
-			log.severe("[" + getDescription().getName() + "] Detected Bukkit build [" + bukkitVersion + "], but requires version [" + bukkitminver + "] or greater!");
-			log.severe("[" + getDescription().getName() + "] Aborting enable!");
-			return;
-		} else {
-			log.info("[" + getDescription().getName() + "] Detected Bukkit version [" + bukkitVersion + "] ok.");
-		}
-		
-		// Load properties and strings.
-		loadProperties(false);
-		
-		// Load external permission/group plugins.
-		super.onEnable();
+        if (bukkitver < bukkitminver) {
+            log.severe("[" + getDescription().getName() + "] Detected Bukkit build [" + bukkitVersion + "], but requires version [" + bukkitminver + "] or greater!");
+            log.severe("[" + getDescription().getName() + "] Aborting enable!");
+            return;
+        } else {
+            log.info("[" + getDescription().getName() + "] Detected Bukkit version [" + bukkitVersion + "] ok.");
+        }
 
-		// Reg us some events yo!	
-		if(!registered){
-			blockListener.registerEvents();
-			entityListener.registerEvents();
-			playerListener.registerEvents();
-			prefixListener.registerEvents();
-			worldListener.registerEvents();
-			inventoryListener.registerEvents();			
-			registered = true;
-		}
-		
-		// All done.
-		log.info("[" + getDescription().getName() + "] Ready to protect your containers.");
-		enabled = true;
-	}
-	
-	
-        @Override
-	public void onDisable(){
-		if(!enabled) return;
-		log.info(this.getDescription().getName() + " is being disabled...  ;.;");
-		
-		if(protectDoors || protectTrapDoors){
-			log.info("[" + getDescription().getName() + "] Closing all automatic doors.");
-			doorCloser.cleanup();
-		}
-		
-		super.onDisable();
-		
-		enabled = false;
-	}
-	
-	
-        @Override
-	public boolean onCommand(CommandSender sender, Command cmd, String commandLabel, String[] args){
-		if(!cmd.getName().equalsIgnoreCase("lockette")) return(false);
-		if(sender instanceof Player) return(true);	// Handling in command preprocess for now.
-		
-		if(args.length == 1){
-			if(args[0].equalsIgnoreCase("reload")){
-				loadProperties(true);
-				
-				localizedMessage(null, Lockette.broadcastReloadTarget, "msg-admin-reload");
-				
-				//String msgString = Lockette.strings.getString("msg-admin-reload");
-				//selectiveBroadcast(Lockette.broadcastReloadTarget, ChatColor.RED + "Lockette: " + msgString);
-			}
-			else if(args[0].equalsIgnoreCase("coredump")){
-				dumpCoreInfo();
-			}
-		}
-		//sender.sendMessage("Lockette: Test");
-		
-		return(true);
-	}
-	
-	
-	//@SuppressWarnings("unchecked") Not needed anymore i guess.
-	protected void loadProperties(boolean reload){
-		if(reload){
-			log.info("[" + getDescription().getName() + "] Reloading plugin configuration files.");
-			this.reloadConfig();
-		}
-		
-		
-		FileConfiguration properties = this.getConfig();
-		boolean	propChanged = true;
-		//boolean			tempBoolean;
-		
+        // Load properties and strings.
+        loadProperties(false);
 
-		uuidSupport = properties.getBoolean("enable-uuid-support", false);
-		properties.set("enable-uuid-support", uuidSupport);
-		msgUser = properties.getBoolean("enable-messages-user", true);
-		properties.set("enable-messages-user", msgUser);
-		msgOwner = properties.getBoolean("enable-messages-owner", false);
-		properties.set("enable-messages-owner", msgOwner);
-		//msgAdmin = true;
-		msgAdmin = properties.getBoolean("enable-messages-admin", true);
-		properties.set("enable-messages-admin", msgAdmin);
-		msgError = properties.getBoolean("enable-messages-error", true);
-		properties.set("enable-messages-error", msgError);
-		msgHelp = properties.getBoolean("enable-messages-help", true);
-		properties.set("enable-messages-help", msgHelp);
-		
-		explosionProtectionAll = properties.getBoolean("explosion-protection-all", true);
-		properties.set("explosion-protection-all", explosionProtectionAll);
-		rotateChests = properties.getBoolean("enable-chest-rotation", false);
-		properties.set("enable-chest-rotation", rotateChests);
-		
-		usePermissions = properties.getBoolean("enable-permissions", false);
-		properties.set("enable-permissions", usePermissions);
-		protectDoors = properties.getBoolean("enable-protection-doors", true);
-		properties.set("enable-protection-doors", protectDoors);
-		protectTrapDoors = properties.getBoolean("enable-protection-trapdoors", true);
-		properties.set("enable-protection-trapdoors", protectTrapDoors);
+        // Load external permission/group plugins.
+        super.onEnable();
 
-		
-		adminSnoop = properties.getBoolean("allow-admin-snoop", false);
-		properties.set("allow-admin-snoop", adminSnoop);
-		adminBypass = properties.getBoolean("allow-admin-bypass", true);
-		properties.set("allow-admin-bypass", adminBypass);
-		adminBreak = properties.getBoolean("allow-admin-break", true);
-		properties.set("allow-admin-break", adminBreak);
-		
+        // Reg us some events yo!	
+        if (!registered) {
+            blockListener.registerEvents();
+            entityListener.registerEvents();
+            playerListener.registerEvents();
+            prefixListener.registerEvents();
+            worldListener.registerEvents();
+            inventoryListener.registerEvents();
+            registered = true;
+        }
 
-		blockHopper = properties.getBoolean("enable-hopper-blocking", true);
-		properties.set("enable-hopper-blocking", blockHopper);
-		
-		// Start a scheduled task, for closing doors.
-		if(protectDoors || protectTrapDoors){
-			if(doorCloser.start()){
-				log.severe("[" + getDescription().getName() + "] Failed to register door closing task!");
-			}
-		}
-		else doorCloser.stop();
-		
-		
+        // All done.
+        log.info("[" + getDescription().getName() + "] Ready to protect your containers.");
+        enabled = true;
+    }
 
-		directPlacement = properties.getBoolean("enable-quick-protect", true);
-		properties.set("enable-quick-protect", directPlacement);
-		colorTags = properties.getBoolean("enable-color-tags", true);
-		properties.set("enable-color-tags", colorTags);
+    @Override
+    public void onDisable() {
+        if (!enabled) {
+            return;
+        }
+        log.info(this.getDescription().getName() + " is being disabled...  ;.;");
 
-		// Don't write this option back out if it doesn't exist, and write a warning if it is enabled.
-		debugMode = properties.getBoolean("enable-debug", false);
-		if(debugMode) log.warning("[" + getDescription().getName() + "] Debug mode is enabled, so Lockette chests are NOT secure.");
-		
-		//directPlacement = true;
-		
-		
-		// = properties.getBoolean("", true);
-		//properties.set("", );
-		
-		//tempBoolean = properties.getBoolean("use-whitelist", false);
-		//tempBoolean = properties.getBoolean("lock-all-chests", true);//rename
-		//tempBoolean = properties.getBoolean("test-bool", true);
-		//properties.set("test-bool", tempBoolean);
-		
-		
-		
-		defaultDoorTimer = properties.getInt("default-door-timer", -1);
-		if(defaultDoorTimer == -1){
-			defaultDoorTimer = 0;
-			properties.set("default-door-timer", defaultDoorTimer);
-			propChanged = true;
-		}
-		
-		
-		
-		// Customizable protected block list.
-		
-		customBlockList = (List<Object>) properties.getList("custom-lockable-block-list");
-		if(customBlockList == null){
-			customBlockList = new ArrayList<Object>(3);
-			customBlockList.add(Material.ENCHANTMENT_TABLE.getId());
-			customBlockList.add(Material.JUKEBOX.getId());
-			customBlockList.add(Material.DIAMOND_BLOCK.getId());
-			customBlockList.add(Material.ANVIL.getId());
-			customBlockList.add(Material.HOPPER.getId());
-			properties.set("custom-lockable-block-list", customBlockList);
-			propChanged = true;
-		}
-		if(!customBlockList.isEmpty()){
-			log.info("[" + getDescription().getName() + "] Custom lockable block list: " + customBlockList.toString());
-		}
-		
-		
-		// Customizable disabled plugin link list.
-		
-		disabledPluginList = (List<Object>) properties.getList("linked-plugin-ignore-list");
-		if(disabledPluginList == null){
-			disabledPluginList = new ArrayList<Object>(1);
-			disabledPluginList.add("mcMMO");
-			properties.set("linked-plugin-ignore-list", disabledPluginList);
-			propChanged = true;
-		}
-		if(!disabledPluginList.isEmpty()){
-			log.info("[" + getDescription().getName() + "] Ignoring linked plugins: " + disabledPluginList.toString());
-		}
-		
-		
-		broadcastSnoopTarget = properties.getString("broadcast-snoop-target");
-		if(broadcastSnoopTarget == null){
-			broadcastSnoopTarget = "[Everyone]";
-			properties.set("broadcast-snoop-target", broadcastSnoopTarget);
-			propChanged = true;
-		}
-		broadcastBreakTarget = properties.getString("broadcast-break-target");
-		if(broadcastBreakTarget == null){
-			broadcastBreakTarget = "[Everyone]";
-			properties.set("broadcast-break-target", broadcastBreakTarget);
-			propChanged = true;
-		}
-		broadcastReloadTarget = properties.getString("broadcast-reload-target");
-		if(broadcastReloadTarget == null){
-			broadcastReloadTarget = "[Operators]";
-			properties.set("broadcast-reload-target", broadcastReloadTarget);
-			propChanged = true;
-		}
-		
-		
-		String stringsFileName = properties.getString("strings-file-name");
-		if((stringsFileName == null) || stringsFileName.isEmpty()){
-			stringsFileName = "strings-en.yml";
-			properties.set("strings-file-name", stringsFileName);
-			propChanged = true;
-		}
-		
-		if(propChanged){
-			this.saveConfig();
-		}
-		loadStrings(reload, stringsFileName);
-	}
-	
-	
-	protected void loadStrings(boolean reload, String fileName){
-		boolean			stringChanged = false;
-		String			tempString;
-		File			stringsFile = new File(getDataFolder(), fileName);
-		
-		
-		// Close the strings file if already loaded.
-		if(strings != null){
-			// Should automatically garbage collect.
-			strings = null;
-		}
-		
-		
-		// Load the strings file.
-		strings = new YamlConfiguration();
-		try{
-			strings.load(stringsFile);
-		}
-		catch(InvalidConfigurationException ex){
-			log.warning("[" + getDescription().getName() + "] Error loading " + fileName + ": " + ex.getMessage());
-			
-			if(!fileName.equals("strings-en.yml")){
-				loadStrings(reload, "strings-en.yml");
-				return;
-			}
-			else log.warning("[" + getDescription().getName() + "] Returning to default strings.");
-		}
-		catch(IOException ex){}
-		
-		
-		// To remove French tags from the default strings file, and to not save to alternate strings files.
-		boolean		original = false;
-		if(fileName.equals("strings-en.yml")){
-			original = true;
-			
-			strings.set("language", "English");
-			
-			// Force to be first.
-			if(original){
-				try{
-					strings.save(stringsFile);
-					strings.load(stringsFile);
-				} catch (IOException | InvalidConfigurationException ex) {}
-			}
-			
-			strings.set("author", "Acru");
-			strings.set("editors", "");
-			strings.set("version", 0);
-		}
-		
-		
-		// Report language.
-		
-		tempString = strings.getString("language");
-		if((tempString == null) || tempString.isEmpty()){
-			log.info("[" + getDescription().getName() + "] Loading strings file " + fileName);
-		}
-		else log.info("[" + getDescription().getName() + "] Loading strings file for " + tempString + " by " + strings.getString("author"));
-		
-		
-		// Load in the alternate sign strings.
-		
-		altPrivate = strings.getString("alternate-private-tag");
-		if((altPrivate == null) || altPrivate.isEmpty() || (original && altPrivate.equals("Privé"))){
-			altPrivate = "Private";
-			strings.set("alternate-private-tag", altPrivate);
-		}
-		altPrivate = "["+altPrivate+"]";
-		
-		altMoreUsers = strings.getString("alternate-moreusers-tag");
-		if((altMoreUsers == null) || altMoreUsers.isEmpty() || (original && altMoreUsers.equals("Autre Noms"))){
-			altMoreUsers = "More Users";
-			strings.set("alternate-moreusers-tag", altMoreUsers);
-			stringChanged = true;
-		}
-		altMoreUsers = "["+altMoreUsers+"]";
-		
-		altEveryone = strings.getString("alternate-everyone-tag");
-		if((altEveryone == null) || altEveryone.isEmpty() || (original && altEveryone.equals("Tout le Monde"))){
-			altEveryone = "Everyone";
-			strings.set("alternate-everyone-tag", altEveryone);
-			stringChanged = true;
-		}
-		altEveryone = "["+altEveryone+"]";
-		
-		altOperators = strings.getString("alternate-operators-tag");
-		if((altOperators == null) || altOperators.isEmpty() || (original && altOperators.equals("Opérateurs"))){
-			altOperators = "Operators";
-			strings.set("alternate-operators-tag", altOperators);
-			stringChanged = true;
-		}
-		altOperators = "["+altOperators+"]";
-		
-		altTimer = strings.getString("alternate-timer-tag");
-		if((altTimer == null) || altTimer.isEmpty() || (original && altTimer.equals("Minuterie"))){
-			altTimer = "Timer";
-			strings.set("alternate-timer-tag", altTimer);
-			stringChanged = true;
-		}
-		
-		altFee = strings.getString("alternate-fee-tag");
-		if((altFee == null) || altFee.isEmpty()){
-			altFee = "Fee";
-			strings.set("alternate-fee-tag", altFee);
-			stringChanged = true;
-		}
-		
-		
-		
-		// Check all the message strings.
-		
-		// Messages for onBlockPlace.
-		tempString = strings.getString("msg-user-conflict-door");
-		if(tempString == null){
-			strings.set("msg-user-conflict-door", "Conflicting door removed!");
-			stringChanged = true;
-		}
-		tempString = strings.getString("msg-user-illegal");
-		if(tempString == null){
-			strings.set("msg-user-illegal", "Illegal chest removed!");
-			stringChanged = true;
-		}
-		tempString = strings.getString("msg-user-resize-owned");
-		if(tempString == null){
-			strings.set("msg-user-resize-owned", "You cannot resize a chest claimed by ***.");
-			stringChanged = true;
-		}
-		tempString = strings.getString("msg-help-chest");
-		if(tempString == null){
-			strings.set("msg-help-chest", "Place a sign headed [Private] next to a chest to lock it.");
-			stringChanged = true;
-		}
-		
-		
-		// Messages for onBlockBreak.
-		tempString = strings.getString("msg-owner-release");
-		if(tempString == null){
-			strings.set("msg-owner-release", "You have released a container!");
-			stringChanged = true;
-		}
-		tempString = strings.getString("msg-admin-release");
-		if(tempString == null){
-			strings.set("msg-admin-release", "(Admin) @@@ has broken open a container owned by ***!");
-			stringChanged = true;
-		}
-		tempString = strings.getString("msg-user-release-owned");
-		if(tempString == null){
-			strings.set("msg-user-release-owned", "You cannot release a container claimed by ***.");
-			stringChanged = true;
-		}
-		tempString = strings.getString("msg-owner-remove");
-		if(tempString == null){
-			strings.set("msg-owner-remove", "You have removed users from a container!");
-			stringChanged = true;
-		}
-		tempString = strings.getString("msg-user-remove-owned");
-		if(tempString == null){
-			strings.set("msg-user-remove-owned", "You cannot remove users from a container claimed by ***.");
-			stringChanged = true;
-		}
-		tempString = strings.getString("msg-user-break-owned");
-		if(tempString == null){
-			strings.set("msg-user-break-owned", "You cannot break a container claimed by ***.");
-			stringChanged = true;
-		}
-		
-		
-		// Messages for onBlockDamage.
-		tempString = strings.getString("msg-user-denied-door");
-		if(tempString == null){
-			strings.set("msg-user-denied-door", "You don't have permission to use this door.");
-			stringChanged = true;
-		}
-		
-		
-		// Messages for onBlockRightClick.
-		tempString = strings.getString("msg-user-touch-fee");
-		if(tempString == null){
-			strings.set("msg-user-touch-fee", "A fee of ### will be paid to ***, to open.");
-			stringChanged = true;
-		}
-		tempString = strings.getString("msg-user-touch-owned");
-		if(tempString == null){
-			strings.set("msg-user-touch-owned", "This container has been claimed by ***.");
-			stringChanged = true;
-		}
-		tempString = strings.getString("msg-help-select");
-		if(tempString == null){
-			strings.set("msg-help-select", "Sign selected, use /lockette <line number> <text> to edit.");
-			stringChanged = true;
-		}
-		
-		
-		// Messages for onBlockInteract.
-		tempString = strings.getString("msg-admin-bypass");
-		if(tempString == null){
-			strings.set("msg-admin-bypass", "Bypassed a door owned by ***, be sure to close it behind you.");
-			stringChanged = true;
-		}
-		tempString = strings.getString("msg-admin-snoop");
-		if(tempString == null){
-			strings.set("msg-admin-snoop", "(Admin) @@@ has snooped around in a container owned by ***!");
-			stringChanged = true;
-		}
-		tempString = strings.getString("msg-user-denied");
-		if(tempString == null){
-			strings.set("msg-user-denied", "You don't have permission to open this container.");
-			stringChanged = true;
-		}
-		
-		
-		// Messages for onSignChange.
-		tempString = strings.getString("msg-error-zone");
-		if(tempString == null){
-			strings.set("msg-error-zone", "This zone is protected by ***.");
-			stringChanged = true;
-		}
-		tempString = strings.getString("msg-error-permission");
-		if(tempString == null){
-			strings.set("msg-error-permission", "Permission to lock container denied.");
-			stringChanged = true;
-		}
-		else if(tempString.equals("Permission to lock containers denied.")){
-			strings.set("msg-error-permission", "Permission to lock container denied.");
-			stringChanged = true;
-		}
-		tempString = strings.getString("msg-error-claim");
-		if(tempString == null){
-			strings.set("msg-error-claim", "No unclaimed container nearby to make Private!");
-			stringChanged = true;
-		}
-		tempString = strings.getString("msg-error-claim-conflict");
-		if(tempString == null){
-			strings.set("msg-error-claim-conflict", "Conflict with an existing protected door.");
-			stringChanged = true;
-		}
-		tempString = strings.getString("msg-admin-claim-error");
-		if(tempString == null){
-			strings.set("msg-admin-claim-error", "Player *** is not online, be sure you have the correct name.");
-			stringChanged = true;
-		}
-		tempString = strings.getString("msg-admin-claim");
-		if(tempString == null){
-			strings.set("msg-admin-claim", "You have claimed a container for ***.");
-			stringChanged = true;
-		}
-		tempString = strings.getString("msg-owner-claim");
-		if(tempString == null){
-			strings.set("msg-owner-claim", "You have claimed a container!");
-			stringChanged = true;
-		}
-		tempString = strings.getString("msg-error-adduser-owned");
-		if(tempString == null){
-			strings.set("msg-error-adduser-owned", "You cannot add users to a container claimed by ***.");
-			stringChanged = true;
-		}
-		tempString = strings.getString("msg-error-adduser");
-		if(tempString == null){
-			strings.set("msg-error-adduser", "No claimed container nearby to add users to!");
-			stringChanged = true;
-		}
-		tempString = strings.getString("msg-owner-adduser");
-		if(tempString == null){
-			strings.set("msg-owner-adduser", "You have added users to a container!");
-			stringChanged = true;
-		}
-		
-		
-		// Messages for onPlayerCommand.
-		if(original){
-			strings.set("msg-help-command1", "&C/lockette <line number> <text> - Edits signs on locked containers. Right click on the sign to edit.");
-			strings.set("msg-help-command2", "&C/lockette fix - Fixes an automatic door that is in the wrong position. Look at the door to edit.");
-			strings.set("msg-help-command3", "&C/lockette reload - Reloads the configuration files. Operators only.");
-			strings.set("msg-help-command4", "&C/lockette version - Reports Lockette version.");
-			stringChanged = true;
-		}
-		
-		/*
-		tempString = strings.getString("msg-help-command1");
-		if(tempString == null){
-			strings.set("msg-help-command1", "/lockette reload - Reloads the configuration files.");
-			stringChanged = true;
-		}
-		tempString = strings.getString("msg-help-command2");
-		if(tempString == null){
-			strings.set("msg-help-command2", "/lockette <line number> <text> - Edits signs on locked containers. Right click on the sign to edit.");
-			stringChanged = true;
-		}
-		*/
-		tempString = strings.getString("msg-admin-reload");
-		if(tempString == null){
-			strings.set("msg-admin-reload", "Reloading plugin configuration files.");
-			stringChanged = true;
-		}
-		tempString = strings.getString("msg-error-fix");
-		if(tempString == null){
-			strings.set("msg-error-fix", "No owned door found.");
-			stringChanged = true;
-		}
-		tempString = strings.getString("msg-error-edit");
-		if(tempString == null){
-			strings.set("msg-error-edit", "First select a sign by right clicking it.");
-			stringChanged = true;
-		}
-		tempString = strings.getString("msg-owner-edit");
-		if(tempString == null){
-			strings.set("msg-owner-edit", "Sign edited successfully.");
-			stringChanged = true;
-		}
-		
-		
-		/*
-		
-		tempString = strings.getString("");
-		if(tempString == null){
-			strings.set("", "");
-			stringChanged = true;
-		}
-		
-		*/
-		
-		if(original) if(stringChanged){
-			try{
-				strings.save(stringsFile);
-			}
-			catch(Exception ex){}
-		}
-	}
-	
-	
-	//********************************************************************************************************************
-	// Start of public section
-	
-	
-	public static boolean isProtected(Block block){
-		if(!enabled) return(false);
-		
-		int type = block.getTypeId();
-		
-		if(type == Material.WALL_SIGN.getId()){
-			Sign sign = (Sign) block.getState();
-			String text = sign.getLine(0).replaceAll("(?i)\u00A7[0-F]", "").toLowerCase();
-			
-			if(text.equals("[private]") || text.equalsIgnoreCase(altPrivate)){
-				return(true);
-			}
-			else if(text.equals("[more users]") || text.equalsIgnoreCase(altMoreUsers)){
-				Block checkBlock = getSignAttachedBlock(block);
-				
-				if(checkBlock != null) if(findBlockOwner(checkBlock) != null){
-					return(true);
-				}
-			}
-		}
-		else if(Lockette.findBlockOwner(block) != null) return(true);
-		
-		return(false);
-	}
-	
-	
-	public static String getProtectedOwner(Block block){
-		return Bukkit.getOfflinePlayer(getProtectedOwnerUUID(block)).getName();
-	}
+        if (protectDoors || protectTrapDoors) {
+            log.info("[" + getDescription().getName() + "] Closing all automatic doors.");
+            doorCloser.cleanup();
+        }
 
-	public static UUID getProtectedOwnerUUID(Block block){
-		if(!enabled) return(null);
-		
-		int	type = block.getTypeId();
-		
-		if(type == Material.WALL_SIGN.getId()){
-			Sign sign = (Sign) block.getState();
-			String text = ChatColor.stripColor(sign.getLine(0)).toLowerCase();
-			
-			if(text.equals("[private]") || text.equalsIgnoreCase(altPrivate)){
-				return getUUIDFromMeta(sign, 1);
-			} else if(text.equals("[more users]") || text.equalsIgnoreCase(altMoreUsers)){
-				Block checkBlock = getSignAttachedBlock(block);
-				
-				if(checkBlock != null){
-					Block signBlock = findBlockOwner(checkBlock);
-					
-					if(signBlock != null){
-						sign = (Sign) signBlock.getState();
-						return getUUIDFromMeta(sign, 1);
-					}
-				}
-			}
-		} else{
-			Block signBlock = Lockette.findBlockOwner(block);
-			if(signBlock != null){
-				Sign sign = (Sign) signBlock.getState();
-				return getUUIDFromMeta(sign, 1);
-			}
-		}
-		
-		return null;
-	}
-	
-	public static boolean isEveryone(Block block){
-		if(!enabled) return(true);
-		
-		Block		signBlock = Lockette.findBlockOwner(block);
-		
-		if(signBlock == null) return(true);
-		
+        super.onDisable();
 
-		// Check main three users.
+        enabled = false;
+    }
 
-		Sign		sign = (Sign) signBlock.getState();
-		String		line;
-		int			y;
-		
-		for(y = 1; y <= 3; ++y) if(!sign.getLine(y).isEmpty()){
-			line = sign.getLine(y).replaceAll("(?i)\u00A7[0-F]", "");
-			
-			if(line.equalsIgnoreCase("[Everyone]") || line.equalsIgnoreCase(Lockette.altEveryone)) return(true);
-		}
-		
-		
-		// Check for more users.
-		
-		List<Block>	list = Lockette.findBlockUsers(block, signBlock);
-		int			x, count = list.size();
-		
-		for(x = 0; x < count; ++x){
-			sign = (Sign) list.get(x).getState();
-			
-			for(y = 1; y <= 3; ++y) if(!sign.getLine(y).isEmpty()){
-				line = sign.getLine(y).replaceAll("(?i)\u00A7[0-F]", "");
-				
-				if(line.equalsIgnoreCase("[Everyone]") || line.equalsIgnoreCase(Lockette.altEveryone)) return(true);
-			}
-		}
-		
-		
-		// Everyone doesn't have permission.
-		return(false);
-	}
-	
-	//********************************************************************************************************************
-	// Start of external permissions section
-	
-	
-        @Override
-	protected boolean pluginEnableOverride(String pluginName){
-		return(isInList(pluginName, Lockette.disabledPluginList));
-	}
-	
-	
-        @Override
-	protected boolean usingExternalPermissions(){
-		if(!usePermissions) return(false);
-		return(super.usingExternalPermissions());
-		//return(usePermissions);
-	}
-	
-	
-        @Override
-	protected boolean usingExternalZones(){
-		return(super.usingExternalZones());
-	}
-	
-	
-        @Override
-	protected String getLocalizedEveryone(){
-		return(altEveryone);
-	}
-	
-	
-        @Override
-	protected String getLocalizedOperators(){
-		return(altOperators);
-	}
-	
-	
-	//********************************************************************************************************************
-	// Start of utility section
-	
+    @Override
+    public boolean onCommand(CommandSender sender, Command cmd, String commandLabel, String[] args) {
+        if (!cmd.getName().equalsIgnoreCase("lockette")) {
+            return (false);
+        }
+        if (sender instanceof Player) {
+            return (true);	// Handling in command preprocess for now.
+        }
+        if (args.length == 1) {
+            if (args[0].equalsIgnoreCase("reload")) {
+                loadProperties(true);
 
-	protected void localizedMessage(Player player, String broadcast, String key){
-		localizedMessage(player, broadcast, key, null, null);
-	}
-	protected void localizedMessage(Player player, String broadcast, String key, String sub){
-		localizedMessage(player, broadcast, key, sub, null);
-	}
-	protected void localizedMessage(Player player, String broadcast, String key, String sub, String num){
-		String		color = "";
-		
-		// Filter and color based on message type.
-		if(key.startsWith("msg-user-")){
-			if(broadcast == null) if(!Lockette.msgUser) return;
-			color = ChatColor.YELLOW.toString();
-		}
-		else if(key.startsWith("msg-owner-")){
-			if(broadcast == null) if(!Lockette.msgOwner) return;
-			color = ChatColor.GOLD.toString();
-		}
-		else if(key.startsWith("msg-admin-")){
-			if(broadcast == null) if(!Lockette.msgAdmin) return;
-			color = ChatColor.RED.toString();
-		}
-		else if(key.startsWith("msg-error-")){
-			if(broadcast == null) if(!Lockette.msgError) return;
-			color = ChatColor.RED.toString();
-		}
-		else if(key.startsWith("msg-help-")){
-			if(broadcast == null) if(!Lockette.msgHelp) return;
-			color = ChatColor.GOLD.toString();
-		}
-		
-		// Fetch the requested message string.
-		String		message = strings.getString(key);
-		if((message == null) || message.isEmpty()) return;
-		
-		// Do place holder substitution.
-		message = message.replaceAll("&([0-9A-Fa-f])", "\u00A7$1");
-		if(sub != null) message = message.replaceAll("\\*\\*\\*", sub + color);
-		if(num != null) message = message.replaceAll("###", num);
-		if(player != null) message = message.replaceAll("@@@", player.getName());
-		
-		// Send out the formatted message.
-		if(broadcast != null) selectiveBroadcast(broadcast, color + "[Lockette] " + message);
-		else if(player != null) player.sendMessage(color + "[Lockette] " + message);
-	}
-	
-	
-	// Find the owner for any block.
-	protected static Block findBlockOwner(Block block){
-		// Pass to a special version with specific values.
-		return(findBlockOwner(block, null, false));
-	}
-	
-	
-	// Version for determining if a container is released.
-	// Should return non-null if destroying the block will surely cause the the sign to fall off.
-	// Okay for trap doors, though could be optimized.
-	protected static Block findBlockOwnerBreak(Block block){
-		int			type = block.getTypeId();
-		
-		
-		// Check known block types.
-		
-		if (BlockUtil.isInList(type, BlockUtil.materialListChests)) {
-			return(findBlockOwnerBase(block, null, false, false, false, false, false));
-		}
-		if(BlockUtil.isInList(type, BlockUtil.materialListTools) || Lockette.isInList(type, Lockette.customBlockList)){
-			return(findBlockOwnerBase(block, null, false, false, false, false, false));
-		}
-		if(Lockette.protectTrapDoors) if(BlockUtil.isInList(type, BlockUtil.materialListTrapDoors)){
-				return(findBlockOwnerBase(block, null, false, false, false, false, false));
-		}
-		if(Lockette.protectDoors) if(BlockUtil.isInList(type, BlockUtil.materialListDoors)){
-			return(findBlockOwnerBase(block, null, false, true, true, false, false));
-		}
-		
-		Block		checkBlock;
+                localizedMessage(null, Lockette.broadcastReloadTarget, "msg-admin-reload");
 
-		// This should be edited if invalid signs can be destroyed..........
-		checkBlock = findBlockOwnerBase(block, null, false, false, false, false, false);
-		if(checkBlock != null) return(checkBlock);
-		
-		if(Lockette.protectTrapDoors){
-			// Need to check if there is a trap door attached to the block, and check for a sign attached there.
-			// This is the bit that could be optimized.
-			
-			checkBlock = block.getRelative(BlockFace.NORTH);
-			if(BlockUtil.isInList(checkBlock.getTypeId(), BlockUtil.materialListTrapDoors)) {
-				if((checkBlock.getData() & 0x3) == 2){
-					checkBlock = findBlockOwnerBase(checkBlock, null, false, false, false, false, false);
-					if(checkBlock != null) return(checkBlock);
-				}
-			}
-			
-			checkBlock = block.getRelative(BlockFace.EAST);
-			if(BlockUtil.isInList(checkBlock.getTypeId(), BlockUtil.materialListTrapDoors)) {
-				if((checkBlock.getData() & 0x3) == 0){
-					checkBlock = findBlockOwnerBase(checkBlock, null, false, false, false, false, false);
-					if(checkBlock != null) return(checkBlock);
-				}
-			}
-			
-			checkBlock = block.getRelative(BlockFace.SOUTH);
-			if(BlockUtil.isInList(checkBlock.getTypeId(), BlockUtil.materialListTrapDoors)) {
-				if((checkBlock.getData() & 0x3) == 3){
-					checkBlock = findBlockOwnerBase(checkBlock, null, false, false, false, false, false);
-					if(checkBlock != null) return(checkBlock);
-				}
-			}
-			
-			checkBlock = block.getRelative(BlockFace.WEST);
-			if(BlockUtil.isInList(checkBlock.getTypeId(), BlockUtil.materialListTrapDoors)) {
-				if((checkBlock.getData() & 0x3) == 1){
-					checkBlock = findBlockOwnerBase(checkBlock, null, false, false, false, false, false);
-					if(checkBlock != null) return(checkBlock);
-				}
-			}
-		}
-		
-		if(Lockette.protectDoors){
-			// Need to check if there is a door above block, and check for a sign attached there.
-			
-			checkBlock = block.getRelative(BlockFace.UP);
-			type = checkBlock.getTypeId();
-			
-			if(!BlockUtil.isInList(type, BlockUtil.materialListDoors)) {
-				// Handle door above type.
-				
-				return(findBlockOwnerBase(checkBlock, null, false, true, true, false, false));
-			}
-		}
-		
-		return(null);
-	}
-	
-	
-	// Version for finding conflicts, when creating a new sign.
-	// Ignore the sign being made, in case another plugin has set the text of the sign prematurely.
-	protected static Block findBlockOwner(Block block, Block ignoreBlock, boolean iterateFurther){
-		if (block == null)
-			return null;
-		
-		int			type = block.getTypeId();
-		Location	ignore;
-		
-		if(ignoreBlock != null) ignore = ignoreBlock.getLocation();
-		else ignore = null;
-		
-		
-		// Check known block types.
-		
-		if (BlockUtil.isInList(type, BlockUtil.materialListChests)) {
-			return(findBlockOwnerBase(block, ignore, true, false, false, false, false));
-		}
-		if(BlockUtil.isInList(type, BlockUtil.materialListTools) || Lockette.isInList(type, Lockette.customBlockList)){
-			return(findBlockOwnerBase(block, ignore, false, false, false, false, false));
-		}
-		if(Lockette.protectTrapDoors) if(BlockUtil.isInList(type, BlockUtil.materialListTrapDoors)) {
-			// Need to check block it is attached to as well as other attached trap doors.
-				//return(findBlockOwnerBase(block, ignore, false, false, false, false, false));				
-				return(findBlockOwner(getTrapDoorAttachedBlock(block), ignoreBlock, false));
-		}
-		if(Lockette.protectDoors) if(BlockUtil.isInList(type, BlockUtil.materialListDoors)) {
-			return(findBlockOwnerBase(block, ignore, true, true, true, true, iterateFurther));
-		}
-		
-		
-		Block		checkBlock, result;
-		
-		if(Lockette.protectTrapDoors){
-			// Check base block, as it might have the sign and it isn't checked below.
-			
-			checkBlock = findBlockOwnerBase(block, ignore, false, false, false, false, false);
-			if(checkBlock != null) return(checkBlock);
-			
-			
-			// Need to check if there is a trap door attached to the block, and check for a sign attached there.
-			
-			checkBlock = block.getRelative(BlockFace.NORTH);
-			if(BlockUtil.isInList(checkBlock.getTypeId(), BlockUtil.materialListTrapDoors)) {
-				if((checkBlock.getData() & 0x3) == 2){
-					checkBlock = findBlockOwnerBase(checkBlock, ignore, false, false, false, false, false);
-					if(checkBlock != null) return(checkBlock);
-				}
-			}
-			
-			checkBlock = block.getRelative(BlockFace.EAST);
-			if(BlockUtil.isInList(checkBlock.getTypeId(), BlockUtil.materialListTrapDoors)) {			
-				if((checkBlock.getData() & 0x3) == 0){
-					checkBlock = findBlockOwnerBase(checkBlock, ignore, false, false, false, false, false);
-					if(checkBlock != null) return(checkBlock);
-				}
-			}
-			
-			checkBlock = block.getRelative(BlockFace.SOUTH);
-			if(BlockUtil.isInList(checkBlock.getTypeId(), BlockUtil.materialListTrapDoors)) {			
-				if((checkBlock.getData() & 0x3) == 3){
-					checkBlock = findBlockOwnerBase(checkBlock, ignore, false, false, false, false, false);
-					if(checkBlock != null) return(checkBlock);
-				}
-			}
-			
-			checkBlock = block.getRelative(BlockFace.WEST);
-			if(BlockUtil.isInList(checkBlock.getTypeId(), BlockUtil.materialListTrapDoors)) {						
-				if((checkBlock.getData() & 0x3) == 1){
-					checkBlock = findBlockOwnerBase(checkBlock, ignore, false, false, false, false, false);
-					if(checkBlock != null) return(checkBlock);
-				}
-			}
-		}
-		
-		if(Lockette.protectDoors){
-			// Don't check the block but check for doors above then below the block, which includes the block.
-			
-			checkBlock = block.getRelative(BlockFace.UP);
-			type = checkBlock.getTypeId();
-			if(BlockUtil.isInList(type, BlockUtil.materialListDoors)) {
-				// Handle door above type.
-				
-				result = findBlockOwnerBase(checkBlock, ignore, true, true, true, true, iterateFurther);
-				if(result != null) return(result);
-			}
-			
-			// This is needed to protect the other block above double doors.
-			
-			checkBlock = block.getRelative(BlockFace.DOWN);
-			type = checkBlock.getTypeId();
-			if(BlockUtil.isInList(type, BlockUtil.materialListDoors)) {
-				// For door below only.
-				// Don't include the block below door, as a sign there would not protect the target block.
-				
-				Block		checkBlock2 = checkBlock.getRelative(BlockFace.DOWN);
-				type = checkBlock2.getTypeId();
-				if(BlockUtil.isInList(type, BlockUtil.materialListDoors)) {
-					return(findBlockOwnerBase(checkBlock2, ignore, true, true, false, true, iterateFurther));
-				}
-				else{
-					return(findBlockOwnerBase(checkBlock, ignore, true, true, false, true, iterateFurther));
-				}
-			}
-		}
-		
-		return(null);
-	}
-	
-	
-	// Should only be called by the above related functions.
-	// Should generally not be passed a hinge block, only a known container or door.
-	private static Block findBlockOwnerBase(Block block, Location ignore, boolean iterate, boolean iterateUp, boolean iterateDown, boolean includeEnds, boolean iterateFurther){
-		Block		checkBlock;
-		int			type;
-		byte		face;
-		boolean		doCheck;
-		
-		
-		// Check up and down along door surfaces, with a recursive call and iterate false.
+                //String msgString = Lockette.strings.getString("msg-admin-reload");
+                //selectiveBroadcast(Lockette.broadcastReloadTarget, ChatColor.RED + "Lockette: " + msgString);
+            } else if (args[0].equalsIgnoreCase("coredump")) {
+                dumpCoreInfo();
+            }
+        }
+        //sender.sendMessage("Lockette: Test");
 
-		if(iterateUp){
-			checkBlock = block.getRelative(BlockFace.UP);
-			type = checkBlock.getTypeId();
-			
-			if(BlockUtil.isInList(type, BlockUtil.materialListDoors)) {
-				checkBlock = findBlockOwnerBase(checkBlock, ignore, false, iterateUp, false, includeEnds, false);
-			}
-			else if(includeEnds) checkBlock = findBlockOwnerBase(checkBlock, ignore, false, false, false, includeEnds, false);
-			else checkBlock = null;
-			
-			if(checkBlock != null) return(checkBlock);
-		}
-		
-		if(iterateDown){
-			checkBlock = block.getRelative(BlockFace.DOWN);
-			type = checkBlock.getTypeId();
-			
-			if(BlockUtil.isInList(type, BlockUtil.materialListDoors)) {
-				checkBlock = findBlockOwnerBase(checkBlock, ignore, false, false, iterateDown, includeEnds, false);
-			}
-			else if(includeEnds) checkBlock = findBlockOwnerBase(checkBlock, ignore, false, false, false, includeEnds, false);
-			else checkBlock = null;
-			
-			if(checkBlock != null) return(checkBlock);
-		}
-		
-		
-		// Check around the originating block, in the order NESW.
-		// If a sign is found and it is not the ignored block, check the text.
-		// If it is not a sign and iterate is true, do a recursive call with iterate false.
-		// (Or further, though this currently backtracks slightly.)
-		
-		checkBlock = block.getRelative(BlockFace.NORTH);
-		if(checkBlock.getTypeId() == Material.WALL_SIGN.getId()){
-			face = checkBlock.getData();
-			if(face == BlockUtil.faceList[2]){
-				// Ignore a sign being created.
-				
-				if(ignore == null) doCheck = true;
-				else if(checkBlock.getLocation().equals(ignore)) doCheck = false;
-				else doCheck = true;
-				
-				if(doCheck){
-					Sign		sign = (Sign) checkBlock.getState();
-					String		text = sign.getLine(0).replaceAll("(?i)\u00A7[0-F]", "").toLowerCase();
-					
-					if(text.equals("[private]") || text.equalsIgnoreCase(altPrivate)) return(checkBlock);
-				}
-			}
-		}
-		else if(iterate) if(checkBlock.getTypeId() == block.getTypeId()){
-			checkBlock = findBlockOwnerBase(checkBlock, ignore, iterateFurther, iterateUp, iterateDown, includeEnds, false);
-			if(checkBlock != null) return(checkBlock);
-		}
-		
-		checkBlock = block.getRelative(BlockFace.EAST);
-		if(checkBlock.getTypeId() == Material.WALL_SIGN.getId()){
-			face = checkBlock.getData();
-			if(face == BlockUtil.faceList[3]){
-				// Ignore a sign being created.
-				
-				if(ignore == null) doCheck = true;
-				else if(checkBlock.getLocation().equals(ignore)) doCheck = false;
-				else doCheck = true;
-				
-				if(doCheck){
-					Sign		sign = (Sign) checkBlock.getState();
-					String		text = sign.getLine(0).replaceAll("(?i)\u00A7[0-F]", "").toLowerCase();
-					
-					if(text.equals("[private]") || text.equalsIgnoreCase(altPrivate)) return(checkBlock);
-				}
-			}
-		}
-		else if(iterate) if(checkBlock.getTypeId() == block.getTypeId()){
-			checkBlock = findBlockOwnerBase(checkBlock, ignore, iterateFurther, iterateUp, iterateDown, includeEnds, false);
-			if(checkBlock != null) return(checkBlock);
-		}
-		
-		checkBlock = block.getRelative(BlockFace.SOUTH);
-		if(checkBlock.getTypeId() == Material.WALL_SIGN.getId()){
-			face = checkBlock.getData();
-			if(face == BlockUtil.faceList[0]){
-				// Ignore a sign being created.
-				
-				if(ignore == null) doCheck = true;
-				else if(checkBlock.getLocation().equals(ignore)) doCheck = false;
-				else doCheck = true;
-				
-				if(doCheck){
-					Sign		sign = (Sign) checkBlock.getState();
-					String		text = sign.getLine(0).replaceAll("(?i)\u00A7[0-F]", "").toLowerCase();
-					
-					if(text.equals("[private]") || text.equalsIgnoreCase(altPrivate)) return(checkBlock);
-				}
-			}
-		}
-		else if(iterate) if(checkBlock.getTypeId() == block.getTypeId()){
-			checkBlock = findBlockOwnerBase(checkBlock, ignore, iterateFurther, iterateUp, iterateDown, includeEnds, false);
-			if(checkBlock != null) return(checkBlock);
-		}
-		
-		checkBlock = block.getRelative(BlockFace.WEST);
-		if(checkBlock.getTypeId() == Material.WALL_SIGN.getId()){
-			face = checkBlock.getData();
-			if(face == BlockUtil.faceList[1]){
-				// Ignore a sign being created.
-				
-				if(ignore == null) doCheck = true;
-				else if(checkBlock.getLocation().equals(ignore)) doCheck = false;
-				else doCheck = true;
-				
-				if(doCheck){
-					Sign		sign = (Sign) checkBlock.getState();
-					String		text = sign.getLine(0).replaceAll("(?i)\u00A7[0-F]", "").toLowerCase();
-					
-					if(text.equals("[private]") || text.equalsIgnoreCase(altPrivate)) return(checkBlock);
-				}
-			}
-		}
-		else if(iterate) if(checkBlock.getTypeId() == block.getTypeId()){
-			checkBlock = findBlockOwnerBase(checkBlock, ignore, iterateFurther, iterateUp, iterateDown, includeEnds, false);
-			if(checkBlock != null) return(checkBlock);
-		}
-		
-		return(null);
-	}
-	
-	
-	protected static List<Block> findBlockUsers(Block block, Block signBlock){
-		int			type = block.getTypeId();
-		
-		if (BlockUtil.isInList(type, BlockUtil.materialListChests)) return(findBlockUsersBase(block, true, false, false, false, 0));
-		if(Lockette.protectTrapDoors) if(BlockUtil.isInList(type, BlockUtil.materialListTrapDoors)){
-			return(findBlockUsersBase(getTrapDoorAttachedBlock(block), false, false, false, true, 0));
-		}
-		if(Lockette.protectDoors) if(BlockUtil.isInList(type, BlockUtil.materialListDoors)) {
-			return(findBlockUsersBase(block, true, true, true, false, signBlock.getY()));
-		}
-		return(findBlockUsersBase(block, false, false, false, false, 0));
-	}
-	
-	
-	private static List<Block> findBlockUsersBase(Block block, boolean iterate, boolean iterateUp, boolean iterateDown, boolean traps, int includeYPos){
-		Block		checkBlock;
-		int			type;
-		byte		face;
-		List<Block> list = new ArrayList<Block>();
-		
-		
-		// Experimental door code, check up and down.
+        return (true);
+    }
 
-		if(iterateUp){
-			checkBlock = block.getRelative(BlockFace.UP);
-			type = checkBlock.getTypeId();
-			
-			if(BlockUtil.isInList(type, BlockUtil.materialListDoors)) {
-				list.addAll(findBlockUsersBase(checkBlock, false, iterateUp, false, false, includeYPos));
-			}
-			// Limitation for more users sign.
-			else if(checkBlock.getY() == includeYPos) list.addAll(findBlockUsersBase(checkBlock, false, false, false, false, includeYPos));
-		}
-		
-		if(iterateDown){
-			checkBlock = block.getRelative(BlockFace.DOWN);
-			type = checkBlock.getTypeId();
-			
-			if(BlockUtil.isInList(type, BlockUtil.materialListDoors)) {
-				list.addAll(findBlockUsersBase(checkBlock, false, false, iterateDown, false, includeYPos));
-			}
-			// No limitation here.
-			else list.addAll(findBlockUsersBase(checkBlock, false, false, false, false, includeYPos));
-		}
-		
-		
-		// Check around the originating block, in the order NESW.
-		
-		checkBlock = block.getRelative(BlockFace.NORTH);
-		type = checkBlock.getTypeId();
-		if(type == Material.WALL_SIGN.getId()){
-			face = checkBlock.getData();
-			if(face == BlockUtil.faceList[2]){
-				Sign		sign = (Sign) checkBlock.getState();
-				String		text = sign.getLine(0).replaceAll("(?i)\u00A7[0-F]", "").toLowerCase();
-				
-				if(text.equals("[more users]") || text.equalsIgnoreCase(altMoreUsers)) list.add(checkBlock);
-			}
-		}
-		else if(iterate){
-			if(type == block.getTypeId()){
-				list.addAll(findBlockUsersBase(checkBlock, false, iterateUp, iterateDown, false, includeYPos));
-			}
-		}
-		else if(traps) if(BlockUtil.isInList(type, BlockUtil.materialListTrapDoors)) {
-			face = checkBlock.getData();
-			if((face & 3) == 2){
-				list.addAll(findBlockUsersBase(checkBlock, false, false, false, false, includeYPos));
-			}
-		}
-		
-		checkBlock = block.getRelative(BlockFace.EAST);
-		type = checkBlock.getTypeId();
-		if(type == Material.WALL_SIGN.getId()){
-			face = checkBlock.getData();
-			if(face == BlockUtil.faceList[3]){
-				Sign		sign = (Sign) checkBlock.getState();
-				String		text = sign.getLine(0).replaceAll("(?i)\u00A7[0-F]", "").toLowerCase();
+    //@SuppressWarnings("unchecked") Not needed anymore i guess.
+    protected void loadProperties(boolean reload) {
+        if (reload) {
+            log.info("[" + getDescription().getName() + "] Reloading plugin configuration files.");
+            this.reloadConfig();
+        }
 
-				if(text.equals("[more users]") || text.equalsIgnoreCase(altMoreUsers)) list.add(checkBlock);
-			}
-		}
-		else if(iterate){
-			if(type == block.getTypeId()){
-				list.addAll(findBlockUsersBase(checkBlock, false, iterateUp, iterateDown, false, includeYPos));
-			}
-		}
-		else if(traps) if(BlockUtil.isInList(type, BlockUtil.materialListTrapDoors)) {
-			face = checkBlock.getData();
-			if((face & 3) == 0){
-				list.addAll(findBlockUsersBase(checkBlock, false, false, false, false, includeYPos));
-			}
-		}
-		
-		checkBlock = block.getRelative(BlockFace.SOUTH);
-		type = checkBlock.getTypeId();
-		if(type == Material.WALL_SIGN.getId()){
-			face = checkBlock.getData();
-			if(face == BlockUtil.faceList[0]){
-				Sign		sign = (Sign) checkBlock.getState();
-				String		text = sign.getLine(0).replaceAll("(?i)\u00A7[0-F]", "").toLowerCase();
+        FileConfiguration properties = this.getConfig();
+        boolean propChanged = true;
+        //boolean			tempBoolean;
 
-				if(text.equals("[more users]") || text.equalsIgnoreCase(altMoreUsers)) list.add(checkBlock);
-			}
-		}
-		else if(iterate){
-			if(type == block.getTypeId()){
-				list.addAll(findBlockUsersBase(checkBlock, false, iterateUp, iterateDown, false, includeYPos));
-			}
-		}
-		else if(traps) if(BlockUtil.isInList(type, BlockUtil.materialListTrapDoors)) {
-			face = checkBlock.getData();
-			if((face & 3) == 3){
-				list.addAll(findBlockUsersBase(checkBlock, false, false, false, false, includeYPos));
-			}
-		}
-		
-		checkBlock = block.getRelative(BlockFace.WEST);
-		type = checkBlock.getTypeId();
-		if(type == Material.WALL_SIGN.getId()){
-			face = checkBlock.getData();
-			if(face == BlockUtil.faceList[1]){
-				Sign		sign = (Sign) checkBlock.getState();
-				String		text = sign.getLine(0).replaceAll("(?i)\u00A7[0-F]", "").toLowerCase();
+        uuidSupport = properties.getBoolean("enable-uuid-support", false);
+        properties.set("enable-uuid-support", uuidSupport);
+        msgUser = properties.getBoolean("enable-messages-user", true);
+        properties.set("enable-messages-user", msgUser);
+        msgOwner = properties.getBoolean("enable-messages-owner", false);
+        properties.set("enable-messages-owner", msgOwner);
+        //msgAdmin = true;
+        msgAdmin = properties.getBoolean("enable-messages-admin", true);
+        properties.set("enable-messages-admin", msgAdmin);
+        msgError = properties.getBoolean("enable-messages-error", true);
+        properties.set("enable-messages-error", msgError);
+        msgHelp = properties.getBoolean("enable-messages-help", true);
+        properties.set("enable-messages-help", msgHelp);
 
-				if(text.equals("[more users]") || text.equalsIgnoreCase(altMoreUsers)) list.add(checkBlock);
-			}
-		}
-		else if(iterate){
-			if(type == block.getTypeId()){
-				list.addAll(findBlockUsersBase(checkBlock, false, iterateUp, iterateDown, false, includeYPos));
-			}
-		}
-		else if(traps) if(BlockUtil.isInList(type, BlockUtil.materialListTrapDoors)) {
-			face = checkBlock.getData();
-			if((face & 3) == 1){
-				list.addAll(findBlockUsersBase(checkBlock, false, false, false, false, includeYPos));
-			}
-		}
-		
-		return(list);
-	}
-	
+        explosionProtectionAll = properties.getBoolean("explosion-protection-all", true);
+        properties.set("explosion-protection-all", explosionProtectionAll);
+        rotateChests = properties.getBoolean("enable-chest-rotation", false);
+        properties.set("enable-chest-rotation", rotateChests);
 
-	protected static int findChestCountNear(Block block){
-		return(findChestCountNearBase(block, (byte) 0));
-	}
-	
-	
-	private static int findChestCountNearBase(Block block, byte face){
-		int			count = 0;
-		Block		checkBlock;
-		
-		
-		if(face != 2){
-			checkBlock = block.getRelative(BlockFace.NORTH);
-			if (BlockUtil.isInList(checkBlock.getTypeId(), BlockUtil.materialListChests) && (checkBlock.getTypeId() == block.getTypeId())) {
-				++count;
-				if(face == 0) count += findChestCountNearBase(checkBlock, (byte) 3);
-			}
-		}
-		
-		if(face != 5){
-			checkBlock = block.getRelative(BlockFace.EAST);
-			if (BlockUtil.isInList(checkBlock.getTypeId(), BlockUtil.materialListChests) && (checkBlock.getTypeId() == block.getTypeId())) {			
-				++count;
-				if(face == 0) count += findChestCountNearBase(checkBlock, (byte) 4);
-			}
-		}
-		
-		if(face != 3){
-			checkBlock = block.getRelative(BlockFace.SOUTH);
-			if (BlockUtil.isInList(checkBlock.getTypeId(), BlockUtil.materialListChests) && (checkBlock.getTypeId() == block.getTypeId())) {			
-				++count;
-				if(face == 0) count += findChestCountNearBase(checkBlock, (byte) 2);
-			}
-		}
-		
-		if(face != 4){
-			checkBlock = block.getRelative(BlockFace.WEST);
-			if (BlockUtil.isInList(checkBlock.getTypeId(), BlockUtil.materialListChests) && (checkBlock.getTypeId() == block.getTypeId())) {			
-				++count;
-				if(face == 0) count += findChestCountNearBase(checkBlock, (byte) 5);
-			}
-		}
-		
-		return(count);
-	}
-	
-	
-	protected static void rotateChestOrientation(Block block, BlockFace blockFace) {
-		
-		if (!BlockUtil.isInList(block.getTypeId(), BlockUtil.materialListChests)) return;
-		if(!rotateChests) if(block.getData() != 0) return;
-		
-		byte		face;
+        usePermissions = properties.getBoolean("enable-permissions", false);
+        properties.set("enable-permissions", usePermissions);
+        protectDoors = properties.getBoolean("enable-protection-doors", true);
+        properties.set("enable-protection-doors", protectDoors);
+        protectTrapDoors = properties.getBoolean("enable-protection-trapdoors", true);
+        properties.set("enable-protection-trapdoors", protectTrapDoors);
 
-		if(blockFace == BlockFace.NORTH) face = BlockUtil.faceList[2];
-		else if(blockFace == BlockFace.EAST) face = BlockUtil.faceList[3];
-		else if(blockFace == BlockFace.SOUTH) face = BlockUtil.faceList[0];
-		else if(blockFace == BlockFace.WEST) face =  BlockUtil.faceList[1];
-		else return;
+        adminSnoop = properties.getBoolean("allow-admin-snoop", false);
+        properties.set("allow-admin-snoop", adminSnoop);
+        adminBypass = properties.getBoolean("allow-admin-bypass", true);
+        properties.set("allow-admin-bypass", adminBypass);
+        adminBreak = properties.getBoolean("allow-admin-break", true);
+        properties.set("allow-admin-break", adminBreak);
+
+        blockHopper = properties.getBoolean("enable-hopper-blocking", true);
+        properties.set("enable-hopper-blocking", blockHopper);
+
+        // Start a scheduled task, for closing doors.
+        if (protectDoors || protectTrapDoors) {
+            if (doorCloser.start()) {
+                log.severe("[" + getDescription().getName() + "] Failed to register door closing task!");
+            }
+        } else {
+            doorCloser.stop();
+        }
+
+        directPlacement = properties.getBoolean("enable-quick-protect", true);
+        properties.set("enable-quick-protect", directPlacement);
+        colorTags = properties.getBoolean("enable-color-tags", true);
+        properties.set("enable-color-tags", colorTags);
+
+        // Don't write this option back out if it doesn't exist, and write a warning if it is enabled.
+        debugMode = properties.getBoolean("enable-debug", false);
+        if (debugMode) {
+            log.warning("[" + getDescription().getName() + "] Debug mode is enabled, so Lockette chests are NOT secure.");
+        }
+
+        //directPlacement = true;
+        // = properties.getBoolean("", true);
+        //properties.set("", );
+        //tempBoolean = properties.getBoolean("use-whitelist", false);
+        //tempBoolean = properties.getBoolean("lock-all-chests", true);//rename
+        //tempBoolean = properties.getBoolean("test-bool", true);
+        //properties.set("test-bool", tempBoolean);
+        defaultDoorTimer = properties.getInt("default-door-timer", -1);
+        if (defaultDoorTimer == -1) {
+            defaultDoorTimer = 0;
+            properties.set("default-door-timer", defaultDoorTimer);
+            propChanged = true;
+        }
+
+        // Customizable protected block list.
+        customBlockList = (List<Object>) properties.getList("custom-lockable-block-list");
+        if (customBlockList == null) {
+            customBlockList = new ArrayList<Object>(3);
+            customBlockList.add(Material.ENCHANTMENT_TABLE.getId());
+            customBlockList.add(Material.JUKEBOX.getId());
+            customBlockList.add(Material.DIAMOND_BLOCK.getId());
+            customBlockList.add(Material.ANVIL.getId());
+            customBlockList.add(Material.HOPPER.getId());
+            properties.set("custom-lockable-block-list", customBlockList);
+            propChanged = true;
+        }
+        if (!customBlockList.isEmpty()) {
+            log.info("[" + getDescription().getName() + "] Custom lockable block list: " + customBlockList.toString());
+        }
+
+        // Customizable disabled plugin link list.
+        disabledPluginList = (List<Object>) properties.getList("linked-plugin-ignore-list");
+        if (disabledPluginList == null) {
+            disabledPluginList = new ArrayList<Object>(1);
+            disabledPluginList.add("mcMMO");
+            properties.set("linked-plugin-ignore-list", disabledPluginList);
+            propChanged = true;
+        }
+        if (!disabledPluginList.isEmpty()) {
+            log.info("[" + getDescription().getName() + "] Ignoring linked plugins: " + disabledPluginList.toString());
+        }
+
+        broadcastSnoopTarget = properties.getString("broadcast-snoop-target");
+        if (broadcastSnoopTarget == null) {
+            broadcastSnoopTarget = "[Everyone]";
+            properties.set("broadcast-snoop-target", broadcastSnoopTarget);
+            propChanged = true;
+        }
+        broadcastBreakTarget = properties.getString("broadcast-break-target");
+        if (broadcastBreakTarget == null) {
+            broadcastBreakTarget = "[Everyone]";
+            properties.set("broadcast-break-target", broadcastBreakTarget);
+            propChanged = true;
+        }
+        broadcastReloadTarget = properties.getString("broadcast-reload-target");
+        if (broadcastReloadTarget == null) {
+            broadcastReloadTarget = "[Operators]";
+            properties.set("broadcast-reload-target", broadcastReloadTarget);
+            propChanged = true;
+        }
+
+        String stringsFileName = properties.getString("strings-file-name");
+        if ((stringsFileName == null) || stringsFileName.isEmpty()) {
+            stringsFileName = "strings-en.yml";
+            properties.set("strings-file-name", stringsFileName);
+            propChanged = true;
+        }
+
+        if (propChanged) {
+            this.saveConfig();
+        }
+        loadStrings(reload, stringsFileName);
+    }
+
+    protected void loadStrings(boolean reload, String fileName) {
+        boolean stringChanged = false;
+        String tempString;
+        File stringsFile = new File(getDataFolder(), fileName);
+
+        // Close the strings file if already loaded.
+        if (strings != null) {
+            // Should automatically garbage collect.
+            strings = null;
+        }
+
+        // Load the strings file.
+        strings = new YamlConfiguration();
+        try {
+            strings.load(stringsFile);
+        } catch (InvalidConfigurationException ex) {
+            log.warning("[" + getDescription().getName() + "] Error loading " + fileName + ": " + ex.getMessage());
+
+            if (!fileName.equals("strings-en.yml")) {
+                loadStrings(reload, "strings-en.yml");
+                return;
+            } else {
+                log.warning("[" + getDescription().getName() + "] Returning to default strings.");
+            }
+        } catch (IOException ex) {
+        }
+
+        // To remove French tags from the default strings file, and to not save to alternate strings files.
+        boolean original = false;
+        if (fileName.equals("strings-en.yml")) {
+            original = true;
+
+            strings.set("language", "English");
+
+            // Force to be first.
+            if (original) {
+                try {
+                    strings.save(stringsFile);
+                    strings.load(stringsFile);
+                } catch (IOException | InvalidConfigurationException ex) {
+                }
+            }
+
+            strings.set("author", "Acru");
+            strings.set("editors", "");
+            strings.set("version", 0);
+        }
+
+        // Report language.
+        tempString = strings.getString("language");
+        if ((tempString == null) || tempString.isEmpty()) {
+            log.info("[" + getDescription().getName() + "] Loading strings file " + fileName);
+        } else {
+            log.info("[" + getDescription().getName() + "] Loading strings file for " + tempString + " by " + strings.getString("author"));
+        }
+
+        // Load in the alternate sign strings.
+        altPrivate = strings.getString("alternate-private-tag");
+        if ((altPrivate == null) || altPrivate.isEmpty() || (original && altPrivate.equals("Privé"))) {
+            altPrivate = "Private";
+            strings.set("alternate-private-tag", altPrivate);
+        }
+        altPrivate = "[" + altPrivate + "]";
+
+        altMoreUsers = strings.getString("alternate-moreusers-tag");
+        if ((altMoreUsers == null) || altMoreUsers.isEmpty() || (original && altMoreUsers.equals("Autre Noms"))) {
+            altMoreUsers = "More Users";
+            strings.set("alternate-moreusers-tag", altMoreUsers);
+            stringChanged = true;
+        }
+        altMoreUsers = "[" + altMoreUsers + "]";
+
+        altEveryone = strings.getString("alternate-everyone-tag");
+        if ((altEveryone == null) || altEveryone.isEmpty() || (original && altEveryone.equals("Tout le Monde"))) {
+            altEveryone = "Everyone";
+            strings.set("alternate-everyone-tag", altEveryone);
+            stringChanged = true;
+        }
+        altEveryone = "[" + altEveryone + "]";
+
+        altOperators = strings.getString("alternate-operators-tag");
+        if ((altOperators == null) || altOperators.isEmpty() || (original && altOperators.equals("Opérateurs"))) {
+            altOperators = "Operators";
+            strings.set("alternate-operators-tag", altOperators);
+            stringChanged = true;
+        }
+        altOperators = "[" + altOperators + "]";
+
+        altTimer = strings.getString("alternate-timer-tag");
+        if ((altTimer == null) || altTimer.isEmpty() || (original && altTimer.equals("Minuterie"))) {
+            altTimer = "Timer";
+            strings.set("alternate-timer-tag", altTimer);
+            stringChanged = true;
+        }
+
+        altFee = strings.getString("alternate-fee-tag");
+        if ((altFee == null) || altFee.isEmpty()) {
+            altFee = "Fee";
+            strings.set("alternate-fee-tag", altFee);
+            stringChanged = true;
+        }
+
+        // Check all the message strings.
+        // Messages for onBlockPlace.
+        tempString = strings.getString("msg-user-conflict-door");
+        if (tempString == null) {
+            strings.set("msg-user-conflict-door", "Conflicting door removed!");
+            stringChanged = true;
+        }
+        tempString = strings.getString("msg-user-illegal");
+        if (tempString == null) {
+            strings.set("msg-user-illegal", "Illegal chest removed!");
+            stringChanged = true;
+        }
+        tempString = strings.getString("msg-user-resize-owned");
+        if (tempString == null) {
+            strings.set("msg-user-resize-owned", "You cannot resize a chest claimed by ***.");
+            stringChanged = true;
+        }
+        tempString = strings.getString("msg-help-chest");
+        if (tempString == null) {
+            strings.set("msg-help-chest", "Place a sign headed [Private] next to a chest to lock it.");
+            stringChanged = true;
+        }
+
+        // Messages for onBlockBreak.
+        tempString = strings.getString("msg-owner-release");
+        if (tempString == null) {
+            strings.set("msg-owner-release", "You have released a container!");
+            stringChanged = true;
+        }
+        tempString = strings.getString("msg-admin-release");
+        if (tempString == null) {
+            strings.set("msg-admin-release", "(Admin) @@@ has broken open a container owned by ***!");
+            stringChanged = true;
+        }
+        tempString = strings.getString("msg-user-release-owned");
+        if (tempString == null) {
+            strings.set("msg-user-release-owned", "You cannot release a container claimed by ***.");
+            stringChanged = true;
+        }
+        tempString = strings.getString("msg-owner-remove");
+        if (tempString == null) {
+            strings.set("msg-owner-remove", "You have removed users from a container!");
+            stringChanged = true;
+        }
+        tempString = strings.getString("msg-user-remove-owned");
+        if (tempString == null) {
+            strings.set("msg-user-remove-owned", "You cannot remove users from a container claimed by ***.");
+            stringChanged = true;
+        }
+        tempString = strings.getString("msg-user-break-owned");
+        if (tempString == null) {
+            strings.set("msg-user-break-owned", "You cannot break a container claimed by ***.");
+            stringChanged = true;
+        }
+
+        // Messages for onBlockDamage.
+        tempString = strings.getString("msg-user-denied-door");
+        if (tempString == null) {
+            strings.set("msg-user-denied-door", "You don't have permission to use this door.");
+            stringChanged = true;
+        }
+
+        // Messages for onBlockRightClick.
+        tempString = strings.getString("msg-user-touch-fee");
+        if (tempString == null) {
+            strings.set("msg-user-touch-fee", "A fee of ### will be paid to ***, to open.");
+            stringChanged = true;
+        }
+        tempString = strings.getString("msg-user-touch-owned");
+        if (tempString == null) {
+            strings.set("msg-user-touch-owned", "This container has been claimed by ***.");
+            stringChanged = true;
+        }
+        tempString = strings.getString("msg-help-select");
+        if (tempString == null) {
+            strings.set("msg-help-select", "Sign selected, use /lockette <line number> <text> to edit.");
+            stringChanged = true;
+        }
+
+        // Messages for onBlockInteract.
+        tempString = strings.getString("msg-admin-bypass");
+        if (tempString == null) {
+            strings.set("msg-admin-bypass", "Bypassed a door owned by ***, be sure to close it behind you.");
+            stringChanged = true;
+        }
+        tempString = strings.getString("msg-admin-snoop");
+        if (tempString == null) {
+            strings.set("msg-admin-snoop", "(Admin) @@@ has snooped around in a container owned by ***!");
+            stringChanged = true;
+        }
+        tempString = strings.getString("msg-user-denied");
+        if (tempString == null) {
+            strings.set("msg-user-denied", "You don't have permission to open this container.");
+            stringChanged = true;
+        }
+
+        // Messages for onSignChange.
+        tempString = strings.getString("msg-error-zone");
+        if (tempString == null) {
+            strings.set("msg-error-zone", "This zone is protected by ***.");
+            stringChanged = true;
+        }
+        tempString = strings.getString("msg-error-permission");
+        if (tempString == null) {
+            strings.set("msg-error-permission", "Permission to lock container denied.");
+            stringChanged = true;
+        } else if (tempString.equals("Permission to lock containers denied.")) {
+            strings.set("msg-error-permission", "Permission to lock container denied.");
+            stringChanged = true;
+        }
+        tempString = strings.getString("msg-error-claim");
+        if (tempString == null) {
+            strings.set("msg-error-claim", "No unclaimed container nearby to make Private!");
+            stringChanged = true;
+        }
+        tempString = strings.getString("msg-error-claim-conflict");
+        if (tempString == null) {
+            strings.set("msg-error-claim-conflict", "Conflict with an existing protected door.");
+            stringChanged = true;
+        }
+        tempString = strings.getString("msg-admin-claim-error");
+        if (tempString == null) {
+            strings.set("msg-admin-claim-error", "Player *** is not online, be sure you have the correct name.");
+            stringChanged = true;
+        }
+        tempString = strings.getString("msg-admin-claim");
+        if (tempString == null) {
+            strings.set("msg-admin-claim", "You have claimed a container for ***.");
+            stringChanged = true;
+        }
+        tempString = strings.getString("msg-owner-claim");
+        if (tempString == null) {
+            strings.set("msg-owner-claim", "You have claimed a container!");
+            stringChanged = true;
+        }
+        tempString = strings.getString("msg-error-adduser-owned");
+        if (tempString == null) {
+            strings.set("msg-error-adduser-owned", "You cannot add users to a container claimed by ***.");
+            stringChanged = true;
+        }
+        tempString = strings.getString("msg-error-adduser");
+        if (tempString == null) {
+            strings.set("msg-error-adduser", "No claimed container nearby to add users to!");
+            stringChanged = true;
+        }
+        tempString = strings.getString("msg-owner-adduser");
+        if (tempString == null) {
+            strings.set("msg-owner-adduser", "You have added users to a container!");
+            stringChanged = true;
+        }
+
+        // Messages for onPlayerCommand.
+        if (original) {
+            strings.set("msg-help-command1", "&C/lockette <line number> <text> - Edits signs on locked containers. Right click on the sign to edit.");
+            strings.set("msg-help-command2", "&C/lockette fix - Fixes an automatic door that is in the wrong position. Look at the door to edit.");
+            strings.set("msg-help-command3", "&C/lockette reload - Reloads the configuration files. Operators only.");
+            strings.set("msg-help-command4", "&C/lockette version - Reports Lockette version.");
+            stringChanged = true;
+        }
+
+        /*
+         tempString = strings.getString("msg-help-command1");
+         if(tempString == null){
+         strings.set("msg-help-command1", "/lockette reload - Reloads the configuration files.");
+         stringChanged = true;
+         }
+         tempString = strings.getString("msg-help-command2");
+         if(tempString == null){
+         strings.set("msg-help-command2", "/lockette <line number> <text> - Edits signs on locked containers. Right click on the sign to edit.");
+         stringChanged = true;
+         }
+         */
+        tempString = strings.getString("msg-admin-reload");
+        if (tempString == null) {
+            strings.set("msg-admin-reload", "Reloading plugin configuration files.");
+            stringChanged = true;
+        }
+        tempString = strings.getString("msg-error-fix");
+        if (tempString == null) {
+            strings.set("msg-error-fix", "No owned door found.");
+            stringChanged = true;
+        }
+        tempString = strings.getString("msg-error-edit");
+        if (tempString == null) {
+            strings.set("msg-error-edit", "First select a sign by right clicking it.");
+            stringChanged = true;
+        }
+        tempString = strings.getString("msg-owner-edit");
+        if (tempString == null) {
+            strings.set("msg-owner-edit", "Sign edited successfully.");
+            stringChanged = true;
+        }
+
+        /*
 		
+         tempString = strings.getString("");
+         if(tempString == null){
+         strings.set("", "");
+         stringChanged = true;
+         }
 		
-		Block		checkBlock;
-		
-		
-		checkBlock = block.getRelative(BlockFace.NORTH);
-		if (BlockUtil.isInList(checkBlock.getTypeId(), BlockUtil.materialListChests) && (checkBlock.getTypeId() == block.getTypeId())) {					
-			if((face == BlockUtil.faceList[1]) || (face == BlockUtil.faceList[3])){
-				block.setData(face);
-				checkBlock.setData(face);
-			}
-			return;
-		}
-		
-		checkBlock = block.getRelative(BlockFace.EAST);
-		if (BlockUtil.isInList(checkBlock.getTypeId(), BlockUtil.materialListChests) && (checkBlock.getTypeId() == block.getTypeId())) {					
-			if((face == BlockUtil.faceList[2]) || (face == BlockUtil.faceList[0])){
-				block.setData(face);
-				checkBlock.setData(face);
-			}
-			return;
-		}
-		
-		checkBlock = block.getRelative(BlockFace.SOUTH);
-		if (BlockUtil.isInList(checkBlock.getTypeId(), BlockUtil.materialListChests) && (checkBlock.getTypeId() == block.getTypeId())) {					
-			if((face == BlockUtil.faceList[1]) || (face == BlockUtil.faceList[3])){
-				block.setData(face);
-				checkBlock.setData(face);
-			}
-			return;
-		}
-		
-		checkBlock = block.getRelative(BlockFace.WEST);
-		if (BlockUtil.isInList(checkBlock.getTypeId(), BlockUtil.materialListChests) && (checkBlock.getTypeId() == block.getTypeId())) {					
-			if((face == BlockUtil.faceList[2]) || (face == BlockUtil.faceList[0])){
-				block.setData(face);
-				checkBlock.setData(face);
-			}
-			return;
-		}
-		
-		block.setData(face);
-	}
-	
-	
-	// Toggle all doors.  (Used by rightclick action to get door list.)
-	protected static List<Block> toggleDoors(Block block, Block keyBlock, boolean wooden, boolean trap){
-		List<Block> list = new ArrayList<Block>();
-		
-		toggleDoorBase(block, keyBlock, !trap, wooden, list);
-		try{
-			if(!wooden) block.getWorld().playEffect(block.getLocation(), Effect.DOOR_TOGGLE, 0);
-		}
-		catch(NoSuchFieldError | NoSuchMethodError | NoClassDefFoundError ex){}
-		
-		return(list);
-	}
-	
-	
-	// Toggle one door.  (Used only by pre-561 builds to fix for bug.)
-	// Now also used to fix doors.
-	protected static void toggleSingleDoor(Block block){
-		int			type = block.getTypeId();
+         */
+        if (original) {
+            if (stringChanged) {
+                try {
+                    strings.save(stringsFile);
+                } catch (Exception ex) {
+                }
+            }
+        }
+    }
+
+    //********************************************************************************************************************
+    // Start of public section
+    public static boolean isProtected(Block block) {
+        if (!enabled) {
+            return (false);
+        }
+
+        int type = block.getTypeId();
+
+        if (type == Material.WALL_SIGN.getId()) {
+            Sign sign = (Sign) block.getState();
+            String text = sign.getLine(0).replaceAll("(?i)\u00A7[0-F]", "").toLowerCase();
+
+            if (text.equals("[private]") || text.equalsIgnoreCase(altPrivate)) {
+                return (true);
+            } else if (text.equals("[more users]") || text.equalsIgnoreCase(altMoreUsers)) {
+                Block checkBlock = getSignAttachedBlock(block);
+
+                if (checkBlock != null) {
+                    if (findBlockOwner(checkBlock) != null) {
+                        return (true);
+                    }
+                }
+            }
+        } else if (Lockette.findBlockOwner(block) != null) {
+            Lockette.log.info("--- FindBlockOwner(" + block + ") != null.  Returning TRUE. Lockette thinks something is protecting this.");
+            return (true);
+        }
+
+        return (false);
+    }
+
+    public static String getProtectedOwner(Block block) {
+        return Bukkit.getOfflinePlayer(getProtectedOwnerUUID(block)).getName();
+    }
+
+    public static UUID getProtectedOwnerUUID(Block block) {
+        if (!enabled) {
+            return (null);
+        }
+
+        int type = block.getTypeId();
+
+        if (type == Material.WALL_SIGN.getId()) {
+            Sign sign = (Sign) block.getState();
+            String text = ChatColor.stripColor(sign.getLine(0)).toLowerCase();
+
+            if (text.equals("[private]") || text.equalsIgnoreCase(altPrivate)) {
+                return getUUIDFromMeta(sign, 1);
+            } else if (text.equals("[more users]") || text.equalsIgnoreCase(altMoreUsers)) {
+                Block checkBlock = getSignAttachedBlock(block);
+
+                if (checkBlock != null) {
+                    Block signBlock = findBlockOwner(checkBlock);
+
+                    if (signBlock != null) {
+                        sign = (Sign) signBlock.getState();
+                        return getUUIDFromMeta(sign, 1);
+                    }
+                }
+            }
+        } else {
+            Block signBlock = Lockette.findBlockOwner(block);
+            if (signBlock != null) {
+                Sign sign = (Sign) signBlock.getState();
+                return getUUIDFromMeta(sign, 1);
+            }
+        }
+
+        return null;
+    }
+
+    public static boolean isEveryone(Block block) {
+        if (!enabled) {
+            return (true);
+        }
+
+        Block signBlock = Lockette.findBlockOwner(block);
+
+        if (signBlock == null) {
+            return (true);
+        }
+
+        // Check main three users.
+        Sign sign = (Sign) signBlock.getState();
+        String line;
+        int y;
+
+        for (y = 1; y <= 3; ++y) {
+            if (!sign.getLine(y).isEmpty()) {
+                line = sign.getLine(y).replaceAll("(?i)\u00A7[0-F]", "");
+
+                if (line.equalsIgnoreCase("[Everyone]") || line.equalsIgnoreCase(Lockette.altEveryone)) {
+                    return (true);
+                }
+            }
+        }
+
+        // Check for more users.
+        List<Block> list = Lockette.findBlockUsers(block, signBlock);
+        int x, count = list.size();
+
+        for (x = 0; x < count; ++x) {
+            sign = (Sign) list.get(x).getState();
+
+            for (y = 1; y <= 3; ++y) {
+                if (!sign.getLine(y).isEmpty()) {
+                    line = sign.getLine(y).replaceAll("(?i)\u00A7[0-F]", "");
+
+                    if (line.equalsIgnoreCase("[Everyone]") || line.equalsIgnoreCase(Lockette.altEveryone)) {
+                        return (true);
+                    }
+                }
+            }
+        }
+
+        // Everyone doesn't have permission.
+        return (false);
+    }
+
+    //********************************************************************************************************************
+    // Start of external permissions section
+    @Override
+    protected boolean pluginEnableOverride(String pluginName) {
+        return (isInList(pluginName, Lockette.disabledPluginList));
+    }
+
+    @Override
+    protected boolean usingExternalPermissions() {
+        if (!usePermissions) {
+            return (false);
+        }
+        return (super.usingExternalPermissions());
+        //return(usePermissions);
+    }
+
+    @Override
+    protected boolean usingExternalZones() {
+        return (super.usingExternalZones());
+    }
+
+    @Override
+    protected String getLocalizedEveryone() {
+        return (altEveryone);
+    }
+
+    @Override
+    protected String getLocalizedOperators() {
+        return (altOperators);
+    }
+
+    //********************************************************************************************************************
+    // Start of utility section
+    protected void localizedMessage(Player player, String broadcast, String key) {
+        localizedMessage(player, broadcast, key, null, null);
+    }
+
+    protected void localizedMessage(Player player, String broadcast, String key, String sub) {
+        localizedMessage(player, broadcast, key, sub, null);
+    }
+
+    protected void localizedMessage(Player player, String broadcast, String key, String sub, String num) {
+        String color = "";
+
+        // Filter and color based on message type.
+        if (key.startsWith("msg-user-")) {
+            if (broadcast == null) {
+                if (!Lockette.msgUser) {
+                    return;
+                }
+            }
+            color = ChatColor.YELLOW.toString();
+        } else if (key.startsWith("msg-owner-")) {
+            if (broadcast == null) {
+                if (!Lockette.msgOwner) {
+                    return;
+                }
+            }
+            color = ChatColor.GOLD.toString();
+        } else if (key.startsWith("msg-admin-")) {
+            if (broadcast == null) {
+                if (!Lockette.msgAdmin) {
+                    return;
+                }
+            }
+            color = ChatColor.RED.toString();
+        } else if (key.startsWith("msg-error-")) {
+            if (broadcast == null) {
+                if (!Lockette.msgError) {
+                    return;
+                }
+            }
+            color = ChatColor.RED.toString();
+        } else if (key.startsWith("msg-help-")) {
+            if (broadcast == null) {
+                if (!Lockette.msgHelp) {
+                    return;
+                }
+            }
+            color = ChatColor.GOLD.toString();
+        }
+
+        // Fetch the requested message string.
+        String message = strings.getString(key);
+        if ((message == null) || message.isEmpty()) {
+            return;
+        }
+
+        // Do place holder substitution.
+        message = message.replaceAll("&([0-9A-Fa-f])", "\u00A7$1");
+        if (sub != null) {
+            message = message.replaceAll("\\*\\*\\*", sub + color);
+        }
+        if (num != null) {
+            message = message.replaceAll("###", num);
+        }
+        if (player != null) {
+            message = message.replaceAll("@@@", player.getName());
+        }
+
+        // Send out the formatted message.
+        if (broadcast != null) {
+            selectiveBroadcast(broadcast, color + "[Lockette] " + message);
+        } else if (player != null) {
+            player.sendMessage(color + "[Lockette] " + message);
+        }
+    }
+
+    // Version for determining if a container is released.
+    // Should return non-null if destroying the block will surely cause the the sign to fall off.
+    // Okay for trap doors, though could be optimized.
+    protected static Block findBlockOwnerBreak(Block block) {
+        int type = block.getTypeId();
+
+        // Check known block types.
+        if (BlockUtil.isInList(type, BlockUtil.materialListChests)) {
+            return (findBlockOwnerBase(block, null, false, false, false, false, false));
+        }
+        if (BlockUtil.isInList(type, BlockUtil.materialListTools) || Lockette.isInList(type, Lockette.customBlockList)) {
+            return (findBlockOwnerBase(block, null, false, false, false, false, false));
+        }
+        if (Lockette.protectTrapDoors) {
+            if (BlockUtil.isInList(type, BlockUtil.materialListTrapDoors)) {
+                return (findBlockOwnerBase(block, null, false, false, false, false, false));
+            }
+        }
+        if (Lockette.protectDoors) {
+            if (BlockUtil.isInList(type, BlockUtil.materialListDoors)) {
+                return (findBlockOwnerBase(block, null, false, true, true, false, false));
+            }
+        }
+
+        Block checkBlock;
+
+        // This should be edited if invalid signs can be destroyed..........
+        checkBlock = findBlockOwnerBase(block, null, false, false, false, false, false);
+        if (checkBlock != null) {
+            return (checkBlock);
+        }
+
+        if (Lockette.protectTrapDoors) {
+            // Need to check if there is a trap door attached to the block, and check for a sign attached there.
+            // This is the bit that could be optimized.
+
+            checkBlock = block.getRelative(BlockFace.NORTH);
+            if (BlockUtil.isInList(checkBlock.getTypeId(), BlockUtil.materialListTrapDoors)) {
+                if ((checkBlock.getData() & 0x3) == 2) {
+                    checkBlock = findBlockOwnerBase(checkBlock, null, false, false, false, false, false);
+                    if (checkBlock != null) {
+                        return (checkBlock);
+                    }
+                }
+            }
+
+            checkBlock = block.getRelative(BlockFace.EAST);
+            if (BlockUtil.isInList(checkBlock.getTypeId(), BlockUtil.materialListTrapDoors)) {
+                if ((checkBlock.getData() & 0x3) == 0) {
+                    checkBlock = findBlockOwnerBase(checkBlock, null, false, false, false, false, false);
+                    if (checkBlock != null) {
+                        return (checkBlock);
+                    }
+                }
+            }
+
+            checkBlock = block.getRelative(BlockFace.SOUTH);
+            if (BlockUtil.isInList(checkBlock.getTypeId(), BlockUtil.materialListTrapDoors)) {
+                if ((checkBlock.getData() & 0x3) == 3) {
+                    checkBlock = findBlockOwnerBase(checkBlock, null, false, false, false, false, false);
+                    if (checkBlock != null) {
+                        return (checkBlock);
+                    }
+                }
+            }
+
+            checkBlock = block.getRelative(BlockFace.WEST);
+            if (BlockUtil.isInList(checkBlock.getTypeId(), BlockUtil.materialListTrapDoors)) {
+                if ((checkBlock.getData() & 0x3) == 1) {
+                    checkBlock = findBlockOwnerBase(checkBlock, null, false, false, false, false, false);
+                    if (checkBlock != null) {
+                        return (checkBlock);
+                    }
+                }
+            }
+        }
+
+        if (Lockette.protectDoors) {
+            // Need to check if there is a door above block, and check for a sign attached there.
+
+            checkBlock = block.getRelative(BlockFace.UP);
+            type = checkBlock.getTypeId();
+
+            if (!BlockUtil.isInList(type, BlockUtil.materialListDoors)) {
+                // Handle door above type.
+
+                return (findBlockOwnerBase(checkBlock, null, false, true, true, false, false));
+            }
+        }
+
+        return (null);
+    }
+
+    // Find the owner for any 'block'.
+    protected static Block findBlockOwner(Block block) {
+        // Pass to a special version with specific values.
+        // Moved this next to the same overloaded function where it belongs.
+        return (findBlockOwner(block, null, false));
+    }
+
+    // Version for finding conflicts, when creating a new sign.
+    // Ignore the sign being made, in case another plugin has set the text of the sign prematurely.
+    protected static Block findBlockOwner(Block block, Block ignoreBlock, boolean iterateFurther) {
+        if (block == null) {
+            return null;
+        }
+
+        int type = block.getTypeId();
+        Location ignore;
+
+        if (ignoreBlock != null) {
+            ignore = ignoreBlock.getLocation();
+        } else {
+            ignore = null;
+        }
+
+        // Check known block types.
+        if (BlockUtil.isInList(type, BlockUtil.materialListChests)) {
+            return (findBlockOwnerBase(block, ignore, true, false, false, false, false));
+        }
+        if (BlockUtil.isInList(type, BlockUtil.materialListTools) || Lockette.isInList(type, Lockette.customBlockList)) {
+            return (findBlockOwnerBase(block, ignore, false, false, false, false, false));
+        }
+        if (Lockette.protectTrapDoors) {
+            if (BlockUtil.isInList(type, BlockUtil.materialListTrapDoors)) {
+                // Need to check block it is attached to as well as other attached trap doors.
+                //return(findBlockOwnerBase(block, ignore, false, false, false, false, false));				
+                return (findBlockOwner(getTrapDoorAttachedBlock(block), ignoreBlock, false));
+            }
+        }
+        if (Lockette.protectDoors) {
+            if (BlockUtil.isInList(type, BlockUtil.materialListDoors)) {
+                return (findBlockOwnerBase(block, ignore, true, true, true, true, iterateFurther));
+            }
+        }
+
+        Block checkBlock, result;
+
+        if (Lockette.protectTrapDoors) {
+            // Check base block, as it might have the sign and it isn't checked below.
+
+            checkBlock = findBlockOwnerBase(block, ignore, false, false, false, false, false);
+            if (checkBlock != null) {
+                return (checkBlock);
+            }
+
+            // Need to check if there is a trap door attached to the block, and check for a sign attached there.
+            checkBlock = block.getRelative(BlockFace.NORTH);
+            if (BlockUtil.isInList(checkBlock.getTypeId(), BlockUtil.materialListTrapDoors)) {
+                if ((checkBlock.getData() & 0x3) == 2) {
+                    checkBlock = findBlockOwnerBase(checkBlock, ignore, false, false, false, false, false);
+                    if (checkBlock != null) {
+                        return (checkBlock);
+                    }
+                }
+            }
+
+            checkBlock = block.getRelative(BlockFace.EAST);
+            if (BlockUtil.isInList(checkBlock.getTypeId(), BlockUtil.materialListTrapDoors)) {
+                if ((checkBlock.getData() & 0x3) == 0) {
+                    checkBlock = findBlockOwnerBase(checkBlock, ignore, false, false, false, false, false);
+                    if (checkBlock != null) {
+                        return (checkBlock);
+                    }
+                }
+            }
+
+            checkBlock = block.getRelative(BlockFace.SOUTH);
+            if (BlockUtil.isInList(checkBlock.getTypeId(), BlockUtil.materialListTrapDoors)) {
+                if ((checkBlock.getData() & 0x3) == 3) {
+                    checkBlock = findBlockOwnerBase(checkBlock, ignore, false, false, false, false, false);
+                    if (checkBlock != null) {
+                        return (checkBlock);
+                    }
+                }
+            }
+
+            checkBlock = block.getRelative(BlockFace.WEST);
+            if (BlockUtil.isInList(checkBlock.getTypeId(), BlockUtil.materialListTrapDoors)) {
+                if ((checkBlock.getData() & 0x3) == 1) {
+                    checkBlock = findBlockOwnerBase(checkBlock, ignore, false, false, false, false, false);
+                    if (checkBlock != null) {
+                        return (checkBlock);
+                    }
+                }
+            }
+        }
+
+        if (Lockette.protectDoors) {
+            // Don't check the block but check for doors above then below the block, which includes the block.
+
+            checkBlock = block.getRelative(BlockFace.UP);
+            type = checkBlock.getTypeId();
+            if (BlockUtil.isInList(type, BlockUtil.materialListDoors)) {
+                // Handle door above type.
+
+                result = findBlockOwnerBase(checkBlock, ignore, true, true, true, true, iterateFurther);
+                if (result != null) {
+                    return (result);
+                }
+            }
+
+            // This is needed to protect the other block above double doors.
+            checkBlock = block.getRelative(BlockFace.DOWN);
+            type = checkBlock.getTypeId();
+            if (BlockUtil.isInList(type, BlockUtil.materialListDoors)) {
+                // For door below only.
+                // Don't include the block below door, as a sign there would not protect the target block.
+
+                Block checkBlock2 = checkBlock.getRelative(BlockFace.DOWN);
+                type = checkBlock2.getTypeId();
+                if (BlockUtil.isInList(type, BlockUtil.materialListDoors)) {
+                    return (findBlockOwnerBase(checkBlock2, ignore, true, true, false, true, iterateFurther));
+                } else {
+                    return (findBlockOwnerBase(checkBlock, ignore, true, true, false, true, iterateFurther));
+                }
+            }
+        }
+
+        return (null);
+    }
+
+    // Should only be called by the above related functions.
+    // Should generally not be passed a hinge block, only a known container or door.
+    private static Block findBlockOwnerBase(Block block, Location ignore, boolean iterate, boolean iterateUp, boolean iterateDown, boolean includeEnds, boolean iterateFurther) {
+        Block checkBlock;
+        int type;
+        byte face;
+        boolean doCheck;
+
+        // Check up and down along door surfaces, with a recursive call and iterate false.
+        if (iterateUp) {
+            checkBlock = block.getRelative(BlockFace.UP);
+            type = checkBlock.getTypeId();
+
+            if (BlockUtil.isInList(type, BlockUtil.materialListDoors)) {
+                checkBlock = findBlockOwnerBase(checkBlock, ignore, false, iterateUp, false, includeEnds, false);
+            } else if (includeEnds) {
+                checkBlock = findBlockOwnerBase(checkBlock, ignore, false, false, false, includeEnds, false);
+            } else {
+                checkBlock = null;
+            }
+
+            if (checkBlock != null) {
+                return (checkBlock);
+            }
+        }
+
+        if (iterateDown) {
+            checkBlock = block.getRelative(BlockFace.DOWN);
+            type = checkBlock.getTypeId();
+
+            if (BlockUtil.isInList(type, BlockUtil.materialListDoors)) {
+                checkBlock = findBlockOwnerBase(checkBlock, ignore, false, false, iterateDown, includeEnds, false);
+            } else if (includeEnds) {
+                checkBlock = findBlockOwnerBase(checkBlock, ignore, false, false, false, includeEnds, false);
+            } else {
+                checkBlock = null;
+            }
+
+            if (checkBlock != null) {
+                return (checkBlock);
+            }
+        }
+
+        // Check around the originating block, in the order NESW.
+        // If a sign is found and it is not the ignored block, check the text.
+        // If it is not a sign and iterate is true, do a recursive call with iterate false.
+        // (Or further, though this currently backtracks slightly.)
+        checkBlock = block.getRelative(BlockFace.NORTH);
+        if (checkBlock.getTypeId() == Material.WALL_SIGN.getId()) {
+            face = checkBlock.getData();
+            if (face == BlockUtil.faceList[2]) {
+                // Ignore a sign being created.
+
+                if (ignore == null) {
+                    doCheck = true;
+                } else if (checkBlock.getLocation().equals(ignore)) {
+                    doCheck = false;
+                } else {
+                    doCheck = true;
+                }
+
+                if (doCheck) {
+                    Sign sign = (Sign) checkBlock.getState();
+                    String text = sign.getLine(0).replaceAll("(?i)\u00A7[0-F]", "").toLowerCase();
+
+                    if (text.equals("[private]") || text.equalsIgnoreCase(altPrivate)) {
+                        return (checkBlock);
+                    }
+                }
+            }
+        } else if (iterate) {
+            if (checkBlock.getTypeId() == block.getTypeId()) {
+                checkBlock = findBlockOwnerBase(checkBlock, ignore, iterateFurther, iterateUp, iterateDown, includeEnds, false);
+                if (checkBlock != null) {
+                    return (checkBlock);
+                }
+            }
+        }
+
+        checkBlock = block.getRelative(BlockFace.EAST);
+        if (checkBlock.getTypeId() == Material.WALL_SIGN.getId()) {
+            face = checkBlock.getData();
+            if (face == BlockUtil.faceList[3]) {
+                // Ignore a sign being created.
+
+                if (ignore == null) {
+                    doCheck = true;
+                } else if (checkBlock.getLocation().equals(ignore)) {
+                    doCheck = false;
+                } else {
+                    doCheck = true;
+                }
+
+                if (doCheck) {
+                    Sign sign = (Sign) checkBlock.getState();
+                    String text = sign.getLine(0).replaceAll("(?i)\u00A7[0-F]", "").toLowerCase();
+
+                    if (text.equals("[private]") || text.equalsIgnoreCase(altPrivate)) {
+                        return (checkBlock);
+                    }
+                }
+            }
+        } else if (iterate) {
+            if (checkBlock.getTypeId() == block.getTypeId()) {
+                checkBlock = findBlockOwnerBase(checkBlock, ignore, iterateFurther, iterateUp, iterateDown, includeEnds, false);
+                if (checkBlock != null) {
+                    return (checkBlock);
+                }
+            }
+        }
+
+        checkBlock = block.getRelative(BlockFace.SOUTH);
+        if (checkBlock.getTypeId() == Material.WALL_SIGN.getId()) {
+            face = checkBlock.getData();
+            if (face == BlockUtil.faceList[0]) {
+                // Ignore a sign being created.
+
+                if (ignore == null) {
+                    doCheck = true;
+                } else if (checkBlock.getLocation().equals(ignore)) {
+                    doCheck = false;
+                } else {
+                    doCheck = true;
+                }
+
+                if (doCheck) {
+                    Sign sign = (Sign) checkBlock.getState();
+                    String text = sign.getLine(0).replaceAll("(?i)\u00A7[0-F]", "").toLowerCase();
+
+                    if (text.equals("[private]") || text.equalsIgnoreCase(altPrivate)) {
+                        return (checkBlock);
+                    }
+                }
+            }
+        } else if (iterate) {
+            if (checkBlock.getTypeId() == block.getTypeId()) {
+                checkBlock = findBlockOwnerBase(checkBlock, ignore, iterateFurther, iterateUp, iterateDown, includeEnds, false);
+                if (checkBlock != null) {
+                    return (checkBlock);
+                }
+            }
+        }
+
+        checkBlock = block.getRelative(BlockFace.WEST);
+        if (checkBlock.getTypeId() == Material.WALL_SIGN.getId()) {
+            face = checkBlock.getData();
+            if (face == BlockUtil.faceList[1]) {
+                // Ignore a sign being created.
+
+                if (ignore == null) {
+                    doCheck = true;
+                } else if (checkBlock.getLocation().equals(ignore)) {
+                    doCheck = false;
+                } else {
+                    doCheck = true;
+                }
+
+                if (doCheck) {
+                    Sign sign = (Sign) checkBlock.getState();
+                    String text = sign.getLine(0).replaceAll("(?i)\u00A7[0-F]", "").toLowerCase();
+
+                    if (text.equals("[private]") || text.equalsIgnoreCase(altPrivate)) {
+                        return (checkBlock);
+                    }
+                }
+            }
+        } else if (iterate) {
+            if (checkBlock.getTypeId() == block.getTypeId()) {
+                checkBlock = findBlockOwnerBase(checkBlock, ignore, iterateFurther, iterateUp, iterateDown, includeEnds, false);
+                if (checkBlock != null) {
+                    return (checkBlock);
+                }
+            }
+        }
+
+        return (null);
+    }
+
+    protected static List<Block> findBlockUsers(Block block, Block signBlock) {
+        int type = block.getTypeId();
+
+        if (BlockUtil.isInList(type, BlockUtil.materialListChests)) {
+            return (findBlockUsersBase(block, true, false, false, false, 0));
+        }
+        if (Lockette.protectTrapDoors) {
+            if (BlockUtil.isInList(type, BlockUtil.materialListTrapDoors)) {
+                return (findBlockUsersBase(getTrapDoorAttachedBlock(block), false, false, false, true, 0));
+            }
+        }
+        if (Lockette.protectDoors) {
+            if (BlockUtil.isInList(type, BlockUtil.materialListDoors)) {
+                return (findBlockUsersBase(block, true, true, true, false, signBlock.getY()));
+            }
+        }
+        return (findBlockUsersBase(block, false, false, false, false, 0));
+    }
+
+    private static List<Block> findBlockUsersBase(Block block, boolean iterate, boolean iterateUp, boolean iterateDown, boolean traps, int includeYPos) {
+        Block checkBlock;
+        int type;
+        byte face;
+        List<Block> list = new ArrayList<Block>();
+
+        // Experimental door code, check up and down.
+        if (iterateUp) {
+            checkBlock = block.getRelative(BlockFace.UP);
+            type = checkBlock.getTypeId();
+
+            if (BlockUtil.isInList(type, BlockUtil.materialListDoors)) {
+                list.addAll(findBlockUsersBase(checkBlock, false, iterateUp, false, false, includeYPos));
+            } // Limitation for more users sign.
+            else if (checkBlock.getY() == includeYPos) {
+                list.addAll(findBlockUsersBase(checkBlock, false, false, false, false, includeYPos));
+            }
+        }
+
+        if (iterateDown) {
+            checkBlock = block.getRelative(BlockFace.DOWN);
+            type = checkBlock.getTypeId();
+
+            if (BlockUtil.isInList(type, BlockUtil.materialListDoors)) {
+                list.addAll(findBlockUsersBase(checkBlock, false, false, iterateDown, false, includeYPos));
+            } // No limitation here.
+            else {
+                list.addAll(findBlockUsersBase(checkBlock, false, false, false, false, includeYPos));
+            }
+        }
+
+        // Check around the originating block, in the order NESW.
+        checkBlock = block.getRelative(BlockFace.NORTH);
+        type = checkBlock.getTypeId();
+        if (type == Material.WALL_SIGN.getId()) {
+            face = checkBlock.getData();
+            if (face == BlockUtil.faceList[2]) {
+                Sign sign = (Sign) checkBlock.getState();
+                String text = sign.getLine(0).replaceAll("(?i)\u00A7[0-F]", "").toLowerCase();
+
+                if (text.equals("[more users]") || text.equalsIgnoreCase(altMoreUsers)) {
+                    list.add(checkBlock);
+                }
+            }
+        } else if (iterate) {
+            if (type == block.getTypeId()) {
+                list.addAll(findBlockUsersBase(checkBlock, false, iterateUp, iterateDown, false, includeYPos));
+            }
+        } else if (traps) {
+            if (BlockUtil.isInList(type, BlockUtil.materialListTrapDoors)) {
+                face = checkBlock.getData();
+                if ((face & 3) == 2) {
+                    list.addAll(findBlockUsersBase(checkBlock, false, false, false, false, includeYPos));
+                }
+            }
+        }
+
+        checkBlock = block.getRelative(BlockFace.EAST);
+        type = checkBlock.getTypeId();
+        if (type == Material.WALL_SIGN.getId()) {
+            face = checkBlock.getData();
+            if (face == BlockUtil.faceList[3]) {
+                Sign sign = (Sign) checkBlock.getState();
+                String text = sign.getLine(0).replaceAll("(?i)\u00A7[0-F]", "").toLowerCase();
+
+                if (text.equals("[more users]") || text.equalsIgnoreCase(altMoreUsers)) {
+                    list.add(checkBlock);
+                }
+            }
+        } else if (iterate) {
+            if (type == block.getTypeId()) {
+                list.addAll(findBlockUsersBase(checkBlock, false, iterateUp, iterateDown, false, includeYPos));
+            }
+        } else if (traps) {
+            if (BlockUtil.isInList(type, BlockUtil.materialListTrapDoors)) {
+                face = checkBlock.getData();
+                if ((face & 3) == 0) {
+                    list.addAll(findBlockUsersBase(checkBlock, false, false, false, false, includeYPos));
+                }
+            }
+        }
+
+        checkBlock = block.getRelative(BlockFace.SOUTH);
+        type = checkBlock.getTypeId();
+        if (type == Material.WALL_SIGN.getId()) {
+            face = checkBlock.getData();
+            if (face == BlockUtil.faceList[0]) {
+                Sign sign = (Sign) checkBlock.getState();
+                String text = sign.getLine(0).replaceAll("(?i)\u00A7[0-F]", "").toLowerCase();
+
+                if (text.equals("[more users]") || text.equalsIgnoreCase(altMoreUsers)) {
+                    list.add(checkBlock);
+                }
+            }
+        } else if (iterate) {
+            if (type == block.getTypeId()) {
+                list.addAll(findBlockUsersBase(checkBlock, false, iterateUp, iterateDown, false, includeYPos));
+            }
+        } else if (traps) {
+            if (BlockUtil.isInList(type, BlockUtil.materialListTrapDoors)) {
+                face = checkBlock.getData();
+                if ((face & 3) == 3) {
+                    list.addAll(findBlockUsersBase(checkBlock, false, false, false, false, includeYPos));
+                }
+            }
+        }
+
+        checkBlock = block.getRelative(BlockFace.WEST);
+        type = checkBlock.getTypeId();
+        if (type == Material.WALL_SIGN.getId()) {
+            face = checkBlock.getData();
+            if (face == BlockUtil.faceList[1]) {
+                Sign sign = (Sign) checkBlock.getState();
+                String text = sign.getLine(0).replaceAll("(?i)\u00A7[0-F]", "").toLowerCase();
+
+                if (text.equals("[more users]") || text.equalsIgnoreCase(altMoreUsers)) {
+                    list.add(checkBlock);
+                }
+            }
+        } else if (iterate) {
+            if (type == block.getTypeId()) {
+                list.addAll(findBlockUsersBase(checkBlock, false, iterateUp, iterateDown, false, includeYPos));
+            }
+        } else if (traps) {
+            if (BlockUtil.isInList(type, BlockUtil.materialListTrapDoors)) {
+                face = checkBlock.getData();
+                if ((face & 3) == 1) {
+                    list.addAll(findBlockUsersBase(checkBlock, false, false, false, false, includeYPos));
+                }
+            }
+        }
+
+        return (list);
+    }
+
+    protected static int findChestCountNear(Block block) {
+        return (findChestCountNearBase(block, (byte) 0));
+    }
+
+    private static int findChestCountNearBase(Block block, byte face) {
+        int count = 0;
+        Block checkBlock;
+
+        if (face != 2) {
+            checkBlock = block.getRelative(BlockFace.NORTH);
+            if (BlockUtil.isInList(checkBlock.getTypeId(), BlockUtil.materialListChests) && (checkBlock.getTypeId() == block.getTypeId())) {
+                ++count;
+                if (face == 0) {
+                    count += findChestCountNearBase(checkBlock, (byte) 3);
+                }
+            }
+        }
+
+        if (face != 5) {
+            checkBlock = block.getRelative(BlockFace.EAST);
+            if (BlockUtil.isInList(checkBlock.getTypeId(), BlockUtil.materialListChests) && (checkBlock.getTypeId() == block.getTypeId())) {
+                ++count;
+                if (face == 0) {
+                    count += findChestCountNearBase(checkBlock, (byte) 4);
+                }
+            }
+        }
+
+        if (face != 3) {
+            checkBlock = block.getRelative(BlockFace.SOUTH);
+            if (BlockUtil.isInList(checkBlock.getTypeId(), BlockUtil.materialListChests) && (checkBlock.getTypeId() == block.getTypeId())) {
+                ++count;
+                if (face == 0) {
+                    count += findChestCountNearBase(checkBlock, (byte) 2);
+                }
+            }
+        }
+
+        if (face != 4) {
+            checkBlock = block.getRelative(BlockFace.WEST);
+            if (BlockUtil.isInList(checkBlock.getTypeId(), BlockUtil.materialListChests) && (checkBlock.getTypeId() == block.getTypeId())) {
+                ++count;
+                if (face == 0) {
+                    count += findChestCountNearBase(checkBlock, (byte) 5);
+                }
+            }
+        }
+
+        return (count);
+    }
+
+    protected static void rotateChestOrientation(Block block, BlockFace blockFace) {
+
+        if (!BlockUtil.isInList(block.getTypeId(), BlockUtil.materialListChests)) {
+            return;
+        }
+        if (!rotateChests) {
+            if (block.getData() != 0) {
+                return;
+            }
+        }
+
+        byte face;
+
+        if (blockFace == BlockFace.NORTH) {
+            face = BlockUtil.faceList[2];
+        } else if (blockFace == BlockFace.EAST) {
+            face = BlockUtil.faceList[3];
+        } else if (blockFace == BlockFace.SOUTH) {
+            face = BlockUtil.faceList[0];
+        } else if (blockFace == BlockFace.WEST) {
+            face = BlockUtil.faceList[1];
+        } else {
+            return;
+        }
+
+        Block checkBlock;
+
+        checkBlock = block.getRelative(BlockFace.NORTH);
+        if (BlockUtil.isInList(checkBlock.getTypeId(), BlockUtil.materialListChests) && (checkBlock.getTypeId() == block.getTypeId())) {
+            if ((face == BlockUtil.faceList[1]) || (face == BlockUtil.faceList[3])) {
+                block.setData(face);
+                checkBlock.setData(face);
+            }
+            return;
+        }
+
+        checkBlock = block.getRelative(BlockFace.EAST);
+        if (BlockUtil.isInList(checkBlock.getTypeId(), BlockUtil.materialListChests) && (checkBlock.getTypeId() == block.getTypeId())) {
+            if ((face == BlockUtil.faceList[2]) || (face == BlockUtil.faceList[0])) {
+                block.setData(face);
+                checkBlock.setData(face);
+            }
+            return;
+        }
+
+        checkBlock = block.getRelative(BlockFace.SOUTH);
+        if (BlockUtil.isInList(checkBlock.getTypeId(), BlockUtil.materialListChests) && (checkBlock.getTypeId() == block.getTypeId())) {
+            if ((face == BlockUtil.faceList[1]) || (face == BlockUtil.faceList[3])) {
+                block.setData(face);
+                checkBlock.setData(face);
+            }
+            return;
+        }
+
+        checkBlock = block.getRelative(BlockFace.WEST);
+        if (BlockUtil.isInList(checkBlock.getTypeId(), BlockUtil.materialListChests) && (checkBlock.getTypeId() == block.getTypeId())) {
+            if ((face == BlockUtil.faceList[2]) || (face == BlockUtil.faceList[0])) {
+                block.setData(face);
+                checkBlock.setData(face);
+            }
+            return;
+        }
+
+        block.setData(face);
+    }
+
+    // Toggle all doors.  (Used by rightclick action to get door list.)
+    protected static List<Block> toggleDoors(Block block, Block keyBlock, boolean wooden, boolean trap) {
+        List<Block> list = new ArrayList<Block>();
+
+        toggleDoorBase(block, keyBlock, !trap, wooden, list);
+        try {
+            if (!wooden) {
+                block.getWorld().playEffect(block.getLocation(), Effect.DOOR_TOGGLE, 0);
+            }
+        } catch (NoSuchFieldError | NoSuchMethodError | NoClassDefFoundError ex) {
+        }
+
+        return (list);
+    }
+
+    // Toggle one door.  (Used only by pre-561 builds to fix for bug.)
+    // Now also used to fix doors.
+    protected static void toggleSingleDoor(Block block) {
+        int type = block.getTypeId();
+        //List<Block> list = new ArrayList<Block>();
+
+        if (BlockUtil.isInList(type, BlockUtil.materialListJustDoors)) {
+            toggleDoorBase(block, null, true, false, null);
+        } else if (BlockUtil.isInList(type, BlockUtil.materialListTrapDoors)
+                || BlockUtil.isInList(type, BlockUtil.materialListGates)) {
+            toggleDoorBase(block, null, false, false, null);
+        }
+        //return(list);
+    }
+
+    // Toggle half door, or trap door.  (Used by automatic door closer.)
+    protected static void toggleHalfDoor(Block block, boolean effect) {
+        int type = block.getTypeId();
 		//List<Block> list = new ArrayList<Block>();
 
-		if(BlockUtil.isInList(type, BlockUtil.materialListJustDoors)) {
-			toggleDoorBase(block, null, true, false, null);
-		}
-		else if(BlockUtil.isInList(type, BlockUtil.materialListTrapDoors) ||
-				BlockUtil.isInList(type, BlockUtil.materialListGates)) {
-			toggleDoorBase(block, null, false, false, null);
-		}
-		//return(list);
-	}
-	
-	
-	// Toggle half door, or trap door.  (Used by automatic door closer.)
-	protected static void toggleHalfDoor(Block block, boolean effect){
-		int			type = block.getTypeId();
-		//List<Block> list = new ArrayList<Block>();
-		
-		//toggleDoor(block, null, false, false, null);
-		//return(list);
-		if(BlockUtil.isInList(type, BlockUtil.materialListDoors)) {
-			block.setData((byte) (block.getData() ^ 4));
-			try{
-				if(effect) block.getWorld().playEffect(block.getLocation(), Effect.DOOR_TOGGLE, 0);
-			}
-			catch(NoSuchFieldError | NoSuchMethodError | NoClassDefFoundError ex){}
-		}
-	}
-	
-	
-	// Main recursive function for toggling a door pair.  (No good for trap doors.)
-	private static void toggleDoorBase(Block block, Block keyBlock, boolean iterateUpDown, boolean skipDoor, List<Block> list){
-		Block		checkBlock;
-		
-		// Toggle this door.
-		
-		if(list != null) list.add(block);
-		if(!skipDoor) block.setData((byte) (block.getData() ^ 4));
-		
+        //toggleDoor(block, null, false, false, null);
+        //return(list);
+        if (BlockUtil.isInList(type, BlockUtil.materialListDoors)) {
+            block.setData((byte) (block.getData() ^ 4));
+            try {
+                if (effect) {
+                    block.getWorld().playEffect(block.getLocation(), Effect.DOOR_TOGGLE, 0);
+                }
+            } catch (NoSuchFieldError | NoSuchMethodError | NoClassDefFoundError ex) {
+            }
+        }
+    }
 
-		// Check up and down.
-		
-		if(iterateUpDown){
-			checkBlock = block.getRelative(BlockFace.UP);
-			if(checkBlock.getTypeId() == block.getTypeId()) toggleDoorBase(checkBlock, null, false, skipDoor, list);
-			
-			checkBlock = block.getRelative(BlockFace.DOWN);
-			if(checkBlock.getTypeId() == block.getTypeId()) toggleDoorBase(checkBlock, null, false, skipDoor, list);
-		}
-		
-		
-		// Check around the originating block, in the order NESW.
-		
-		if(keyBlock != null){
-			checkBlock = block.getRelative(BlockFace.NORTH);
-			if(checkBlock.getTypeId() == block.getTypeId()){
-				if(((checkBlock.getX() == keyBlock.getX()) && (checkBlock.getZ() == keyBlock.getZ())) ||
-						((block.getX() == keyBlock.getX()) && (block.getZ() == keyBlock.getZ()))){
-					toggleDoorBase(checkBlock, null, true, false, list);
-				}
-			}
-			
-			checkBlock = block.getRelative(BlockFace.EAST);
-			if(checkBlock.getTypeId() == block.getTypeId()){
-				if(((checkBlock.getX() == keyBlock.getX()) && (checkBlock.getZ() == keyBlock.getZ())) ||
-						((block.getX() == keyBlock.getX()) && (block.getZ() == keyBlock.getZ()))){
-					toggleDoorBase(checkBlock, null, true, false, list);
-				}
-			}
-			
-			checkBlock = block.getRelative(BlockFace.SOUTH);
-			if(checkBlock.getTypeId() == block.getTypeId()){
-				if(((checkBlock.getX() == keyBlock.getX()) && (checkBlock.getZ() == keyBlock.getZ())) ||
-						((block.getX() == keyBlock.getX()) && (block.getZ() == keyBlock.getZ()))){
-					toggleDoorBase(checkBlock, null, true, false, list);
-				}
-			}
-			
-			checkBlock = block.getRelative(BlockFace.WEST);
-			if(checkBlock.getTypeId() == block.getTypeId()){
-				if(((checkBlock.getX() == keyBlock.getX()) && (checkBlock.getZ() == keyBlock.getZ())) ||
-						((block.getX() == keyBlock.getX()) && (block.getZ() == keyBlock.getZ()))){
-					toggleDoorBase(checkBlock, null, true, false, list);
-				}
-			}
-		}
-	}
-	
-	
-	//********************************************************************************************************************
-	// Start of utility section
-	
-	
-	protected static int getSignOption(Block signBlock, String tag, String altTag, int defaultValue){
-		Sign		sign = (Sign) signBlock.getState();
-		
-		
-		// Check main two users.
-		
-		String		line;
-		int			x, y, end, index;
-		
-		for(y = 2; y <= 3; ++y) if(!sign.getLine(y).isEmpty()){
-			line = sign.getLine(y).replaceAll("(?i)\u00A7[0-F]", "");
-			//if(line.isEmpty()) continue;
-			
-			end = line.length() - 1;
-			
-			if(end >= 2) if((line.charAt(0) == '[') && (line.charAt(end) == ']')){
-				index = line.indexOf(":");
-				
-				if(index == -1){
-					// No number.
-					if(line.substring(1, end).equalsIgnoreCase(tag) || line.substring(1, end).equalsIgnoreCase(altTag)){
-						return(defaultValue);
-					}
-				}
-				else{
-					// Number.
-					if(line.substring(1, index).equalsIgnoreCase(tag) || line.substring(1, index).equalsIgnoreCase(altTag)){
-						// Trim junk around the number.
-						
-						for(x = index; x < end; ++x){
-							if(Character.isDigit(line.charAt(x))){
-								index = x;
-								break;
-							}
-						}
-						for(x = index+1; x < end; ++x){
-							if(!Character.isDigit(line.charAt(x))){
-								end = x;
-								break;
-							}
-						}
-						
-						
-						// Try to parse the number, and return the result.
-						try{
-							int value = Integer.parseInt(line.substring(index, end));
-							return(value);
-						}
-						catch(NumberFormatException ex){
-							return(defaultValue);
-						}
-					}
-				}
-			}
-		}
-		
-		return(defaultValue);
-	}
-	
-	
-	protected static boolean isInList(Object target, List<Object> list){
-		if(list == null) return(false);
-		for(int x = 0; x < list.size(); ++x) if(list.get(x).equals(target)) return(true);
-		return(false);
-	}
+    // Main recursive function for toggling a door pair.  (No good for trap doors.)
+    private static void toggleDoorBase(Block block, Block keyBlock, boolean iterateUpDown, boolean skipDoor, List<Block> list) {
+        Block checkBlock;
 
-	private static boolean isHackFormat(String line) {
-		String[] strs = line.split(":");		
-		return (line.indexOf(":") > 1 && strs[1].length() == 36) ? true : false;
-	}		
+        // Toggle this door.
+        if (list != null) {
+            list.add(block);
+        }
+        if (!skipDoor) {
+            block.setData((byte) (block.getData() ^ 4));
+        }
 
-	private static String trim(String str) {
-		return str == null ? null : str.trim();
-	}
+        // Check up and down.
+        if (iterateUpDown) {
+            checkBlock = block.getRelative(BlockFace.UP);
+            if (checkBlock.getTypeId() == block.getTypeId()) {
+                toggleDoorBase(checkBlock, null, false, skipDoor, list);
+            }
 
-	// extract palyer name from the playerID string
-	static private String getPlayerName(String str) {
-		return trim(((str.indexOf(":") > 0) ? str.split(":")[0] : str));
-	}
+            checkBlock = block.getRelative(BlockFace.DOWN);
+            if (checkBlock.getTypeId() == block.getTypeId()) {
+                toggleDoorBase(checkBlock, null, false, skipDoor, list);
+            }
+        }
 
-	static private String getPlayerUUIDString(String str) {
-		return trim(((str.indexOf(":") > 0) ? str.split(":")[1] : str));
-	}
-	
-	static private UUID getPlayerUUID(String str) {
-		return UUID.fromString(getPlayerUUIDString(str));
-	}
-	
-	static void setLine(Sign sign, int index, String typed) {
-		// check whether we should continue with uuid support or not.
-		OfflinePlayer player = null;
-        if(!typed.isEmpty() && typed.indexOf("[") != 0) {
-			String id = ChatColor.stripColor(typed.replaceAll("&([0-9A-Fa-f])", ""));
-			player = Bukkit.getOfflinePlayer(id);
-		}
+        // Check around the originating block, in the order NESW.
+        if (keyBlock != null) {
+            checkBlock = block.getRelative(BlockFace.NORTH);
+            if (checkBlock.getTypeId() == block.getTypeId()) {
+                if (((checkBlock.getX() == keyBlock.getX()) && (checkBlock.getZ() == keyBlock.getZ()))
+                        || ((block.getX() == keyBlock.getX()) && (block.getZ() == keyBlock.getZ()))) {
+                    toggleDoorBase(checkBlock, null, true, false, list);
+                }
+            }
 
-		// if player is "null", then typed string will just be set.
-		setLine(sign, index, typed, player);
-	}
-	
-	static void setLine(Sign sign, int index, String typed, OfflinePlayer player) {
-		// set whatever typed on the sign anyway.
-		String cline = typed.replaceAll("&([0-9A-Fa-f])", "\u00A7$1");
-		sign.setLine(index, cline);
-		sign.update(true);
+            checkBlock = block.getRelative(BlockFace.EAST);
+            if (checkBlock.getTypeId() == block.getTypeId()) {
+                if (((checkBlock.getX() == keyBlock.getX()) && (checkBlock.getZ() == keyBlock.getZ()))
+                        || ((block.getX() == keyBlock.getX()) && (block.getZ() == keyBlock.getZ()))) {
+                    toggleDoorBase(checkBlock, null, true, false, list);
+                }
+            }
 
-		UUID[] uuids = null;
-		if (!sign.hasMetadata(META_KEY)) {
-			uuids = new UUID[3];
-			sign.setMetadata(META_KEY, new FixedMetadataValue(plugin, uuids));
-		} else {
-			List<MetadataValue> list = sign.getMetadata(META_KEY);
-			// should be only one MetadataValue	
-			uuids = (UUID[]) list.get(0).value();
-		}
-		uuids[index-1] = (player != null) ? player.getUniqueId() : null;
-		if (Lockette.DEBUG) {
-			Lockette.log.info("[Lockette] setting the line " + index + " to " + cline);
-			Lockette.log.info("[Lockette] corresponding player is " + player);
-			Lockette.log.info("[Lockette] uuid has been attached: " + uuids[index-1]);			
-		}
-	}
+            checkBlock = block.getRelative(BlockFace.SOUTH);
+            if (checkBlock.getTypeId() == block.getTypeId()) {
+                if (((checkBlock.getX() == keyBlock.getX()) && (checkBlock.getZ() == keyBlock.getZ()))
+                        || ((block.getX() == keyBlock.getX()) && (block.getZ() == keyBlock.getZ()))) {
+                    toggleDoorBase(checkBlock, null, true, false, list);
+                }
+            }
 
-	private static UUID getUUIDFromMeta(Sign sign, int index) {
-		if (sign.hasMetadata(META_KEY)) {
-			List<MetadataValue> list = sign.getMetadata(META_KEY);
-			// should be only one MetadataValue	
-			return ((UUID[]) list.get(0).value())[index-1];
-		} 
-		return null;
-	}
+            checkBlock = block.getRelative(BlockFace.WEST);
+            if (checkBlock.getTypeId() == block.getTypeId()) {
+                if (((checkBlock.getX() == keyBlock.getX()) && (checkBlock.getZ() == keyBlock.getZ()))
+                        || ((block.getX() == keyBlock.getX()) && (block.getZ() == keyBlock.getZ()))) {
+                    toggleDoorBase(checkBlock, null, true, false, list);
+                }
+            }
+        }
+    }
 
-	static void removeUUIDMetadata(Sign sign) {
-		if (sign.hasMetadata(META_KEY)) {
-			sign.removeMetadata(META_KEY, plugin);
-		} 
-	}
+    //********************************************************************************************************************
+    // Start of utility section
+    protected static int getSignOption(Block signBlock, String tag, String altTag, int defaultValue) {
+        Sign sign = (Sign) signBlock.getState();
 
-	static private boolean oldFormatCheck(String signname, String pname) {
-		signname = ChatColor.stripColor(signname);
-		pname = ChatColor.stripColor(pname);		
-		int length = pname.length();
-		if (length > 15)
-			length = 15;
-		return signname.equalsIgnoreCase(pname.substring(0, length));
-	}
-		
-	static private boolean matchUserUUID(Sign sign, int index, OfflinePlayer player, boolean update) {
-		try {
-			String line = sign.getLine(index);
-			String checkline = ChatColor.stripColor(line);
-			
-			if((checkline.indexOf("[") == 0 && checkline.indexOf("]") > 1) ||
-			   line.isEmpty()) {
-				return false;
-			}
-			
-			// no uuid support? then just compare name against typed
-			if (!uuidSupport)  {	// 
-				if (Lockette.DEBUG) {
-					Lockette.log.info("[Lockette] NO UUID support, doing old name checking.");
-				}
-				//return checkline.split(":")[0].trim().equals(player.getName());
-				String pname = player.getName();
-				String against = checkline.split(":")[0].trim();
-				return oldFormatCheck(against, pname);
-			}
-			
-			UUID uuid = null;
-			String name = getPlayerName(line);
-			if (Lockette.DEBUG) {
-				Lockette.log.info("[Lockette] Name on the sign is : " + name);
-			}
-			
-			if(isHackFormat(line)) {
-				//if it's hacked uuid line, convert to metadata
-				// if hacked UUID line, get the UUID
-				try {
-					uuid = getPlayerUUID(line);
-				} catch (IllegalArgumentException e) {
-					log.info("[" + plugin.getDescription().getName() + "] Invalid Player UUID!");
-					return false;
-				}
-				if (uuid != null && update) {
-					OfflinePlayer p = Bukkit.getOfflinePlayer(uuid);
-					if (Lockette.DEBUG) {
-						Lockette.log.info("[Lockette] updating the old hacked format for " + p);
-					}
-					setLine(sign, index, name, p);
-				}
-				// update sign for later uuid check!
-				sign.update();
-			}
-			
-			// not old hack UUID format and just player name?
-			// then convert the existing name to uuid then compare uuid
-			if (!sign.hasMetadata(META_KEY) || getUUIDFromMeta(sign, index) == null) {
-				if (Lockette.DEBUG) {
-					log.info("[Lockette] Checking for original format for " +  checkline);
-				}
-				OfflinePlayer oplayer = Bukkit.getOfflinePlayer(checkline);			
-				if (oplayer != null && oplayer.hasPlayedBefore()) {
-					if (Lockette.DEBUG) {
-						log.info("[Lockette] converting original format for " + oplayer + " name = " + checkline);
-					}
-					setLine(sign, index, line, oplayer);
-				} else {
-					// partial check with long name.
-					String pname = player.getName();
-					String against = checkline.split(":")[0].trim();
-					if (oldFormatCheck(against, pname)) {
-						if (Lockette.DEBUG) {
-							Lockette.log.info("[Lockette] Partial match! Converting original format for " + player.getName() + " name = " + checkline);
-						}
-						setLine(sign, index, player.getName(), player);
-					}
-					// if even partial matching is not found, leave it as is.
+        // Check main two users.
+        String line;
+        int x, y, end, index;
+
+        for (y = 2; y <= 3; ++y) {
+            if (!sign.getLine(y).isEmpty()) {
+                line = sign.getLine(y).replaceAll("(?i)\u00A7[0-F]", "");
+                //if(line.isEmpty()) continue;
+
+                end = line.length() - 1;
+
+                if (end >= 2) {
+                    if ((line.charAt(0) == '[') && (line.charAt(end) == ']')) {
+                        index = line.indexOf(":");
+
+                        if (index == -1) {
+                            // No number.
+                            if (line.substring(1, end).equalsIgnoreCase(tag) || line.substring(1, end).equalsIgnoreCase(altTag)) {
+                                return (defaultValue);
+                            }
+                        } else {
+                            // Number.
+                            if (line.substring(1, index).equalsIgnoreCase(tag) || line.substring(1, index).equalsIgnoreCase(altTag)) {
+                                // Trim junk around the number.
+
+                                for (x = index; x < end; ++x) {
+                                    if (Character.isDigit(line.charAt(x))) {
+                                        index = x;
+                                        break;
+                                    }
+                                }
+                                for (x = index + 1; x < end; ++x) {
+                                    if (!Character.isDigit(line.charAt(x))) {
+                                        end = x;
+                                        break;
+                                    }
+                                }
+
+                                // Try to parse the number, and return the result.
+                                try {
+                                    int value = Integer.parseInt(line.substring(index, end));
+                                    return (value);
+                                } catch (NumberFormatException ex) {
+                                    return (defaultValue);
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        }
+
+        return (defaultValue);
+    }
+
+    protected static boolean isInList(Object target, List<Object> list) {
+        if (list == null) {
+            return (false);
+        }
+        for (int x = 0; x < list.size(); ++x) {
+            if (list.get(x).equals(target)) {
+                return (true);
+            }
+        }
+        return (false);
+    }
+
+    private static boolean isHackFormat(String line) {
+        String[] strs = line.split(":");
+        return (line.indexOf(":") > 1 && strs[1].length() == 36) ? true : false;
+    }
+
+    private static String trim(String str) {
+        return str == null ? null : str.trim();
+    }
+
+    // extract palyer name from the playerID string
+    static private String getPlayerName(String str) {
+        return trim(((str.indexOf(":") > 0) ? str.split(":")[0] : str));
+    }
+
+    static private String getPlayerUUIDString(String str) {
+        return trim(((str.indexOf(":") > 0) ? str.split(":")[1] : str));
+    }
+
+    static private UUID getPlayerUUID(String str) {
+        return UUID.fromString(getPlayerUUIDString(str));
+    }
+
+    static void setLine(Sign sign, int index, String typed) {
+        // check whether we should continue with uuid support or not.
+        OfflinePlayer player = null;
+        if (!typed.isEmpty() && typed.indexOf("[") != 0) {
+            String id = ChatColor.stripColor(typed.replaceAll("&([0-9A-Fa-f])", ""));
+            player = Bukkit.getOfflinePlayer(id);
+        }
+
+        // if player is "null", then typed string will just be set.
+        setLine(sign, index, typed, player);
+    }
+
+    static void setLine(Sign sign, int index, String typed, OfflinePlayer player) {
+        // set whatever typed on the sign anyway.
+        String cline = typed.replaceAll("&([0-9A-Fa-f])", "\u00A7$1");
+        sign.setLine(index, cline);
+        sign.update(true);
+
+        UUID[] uuids = null;
+        if (!sign.hasMetadata(META_KEY)) {
+            uuids = new UUID[3];
+            sign.setMetadata(META_KEY, new FixedMetadataValue(plugin, uuids));
+        } else {
+            List<MetadataValue> list = sign.getMetadata(META_KEY);
+            // should be only one MetadataValue	
+            uuids = (UUID[]) list.get(0).value();
+        }
+        uuids[index - 1] = (player != null) ? player.getUniqueId() : null;
+        if (Lockette.DEBUG) {
+            Lockette.log.info("[Lockette] setting the line " + index + " to " + cline);
+            Lockette.log.info("[Lockette] corresponding player is " + player);
+            Lockette.log.info("[Lockette] uuid has been attached: " + uuids[index - 1]);
+        }
+    }
+
+    private static UUID getUUIDFromMeta(Sign sign, int index) {
+        if (sign.hasMetadata(META_KEY)) {
+            List<MetadataValue> list = sign.getMetadata(META_KEY);
+            // should be only one MetadataValue	
+            return ((UUID[]) list.get(0).value())[index - 1];
+        }
+        return null;
+    }
+
+    static void removeUUIDMetadata(Sign sign) {
+        if (sign.hasMetadata(META_KEY)) {
+            sign.removeMetadata(META_KEY, plugin);
+        }
+    }
+
+    static private boolean oldFormatCheck(String signname, String pname) {
+        signname = ChatColor.stripColor(signname);
+        pname = ChatColor.stripColor(pname);
+        int length = pname.length();
+        if (length > 15) {
+            length = 15;
+        }
+        return signname.equalsIgnoreCase(pname.substring(0, length));
+    }
+
+    static private boolean matchUserUUID(Sign sign, int index, OfflinePlayer player, boolean update) {
+        try {
+            String line = sign.getLine(index);
+            String checkline = ChatColor.stripColor(line);
+
+            if ((checkline.indexOf("[") == 0 && checkline.indexOf("]") > 1)
+                    || line.isEmpty()) {
+                return false;
+            }
+
+            // no uuid support? then just compare name against typed
+            if (!uuidSupport) {	// 
+                if (Lockette.DEBUG) {
+                    Lockette.log.info("[Lockette] NO UUID support, doing old name checking.");
+                }
+                //return checkline.split(":")[0].trim().equals(player.getName());
+                String pname = player.getName();
+                String against = checkline.split(":")[0].trim();
+                return oldFormatCheck(against, pname);
+            }
+
+            UUID uuid = null;
+            String name = getPlayerName(line);
+            if (Lockette.DEBUG) {
+                Lockette.log.info("[Lockette] Name on the sign is : " + name);
+            }
+
+            if (isHackFormat(line)) {
+                //if it's hacked uuid line, convert to metadata
+                // if hacked UUID line, get the UUID
+                try {
+                    uuid = getPlayerUUID(line);
+                } catch (IllegalArgumentException e) {
+                    log.info("[" + plugin.getDescription().getName() + "] Invalid Player UUID!");
+                    return false;
+                }
+                if (uuid != null && update) {
+                    OfflinePlayer p = Bukkit.getOfflinePlayer(uuid);
+                    if (Lockette.DEBUG) {
+                        Lockette.log.info("[Lockette] updating the old hacked format for " + p);
+                    }
+                    setLine(sign, index, name, p);
+                }
+                // update sign for later uuid check!
+                sign.update();
+            }
+
+            // not old hack UUID format and just player name?
+            // then convert the existing name to uuid then compare uuid
+            if (!sign.hasMetadata(META_KEY) || getUUIDFromMeta(sign, index) == null) {
+                if (Lockette.DEBUG) {
+                    log.info("[Lockette] Checking for original format for " + checkline);
+                }
+                OfflinePlayer oplayer = Bukkit.getOfflinePlayer(checkline);
+                if (oplayer != null && oplayer.hasPlayedBefore()) {
+                    if (Lockette.DEBUG) {
+                        log.info("[Lockette] converting original format for " + oplayer + " name = " + checkline);
+                    }
+                    setLine(sign, index, line, oplayer);
+                } else {
+                    // partial check with long name.
+                    String pname = player.getName();
+                    String against = checkline.split(":")[0].trim();
+                    if (oldFormatCheck(against, pname)) {
+                        if (Lockette.DEBUG) {
+                            Lockette.log.info("[Lockette] Partial match! Converting original format for " + player.getName() + " name = " + checkline);
+                        }
+                        setLine(sign, index, player.getName(), player);
+                    }
+                    // if even partial matching is not found, leave it as is.
 					/*
-					  else {
-					  Lockette.log.log(Level.INFO, "[Lockette] Can't convert {0} !", line);
-					  setLine(sign, index, line);
-					  if (index == 1){
-					  sign.setLine(0, "[?]");
-					  }
-					  }
-					*/
-				}
-				// update sign for later uuid check!
-				sign.update();			
-			}
-			
-			uuid = getUUIDFromMeta(sign, index);
-			
-			if (Lockette.DEBUG) {
-				log.info("[Lockette] uuid on the sign = " + uuid);
-				log.info("[Lockette] player's uuid    = " + player.getUniqueId());
-			}
-			
-			if(uuid != null) {
-				if (uuid.equals(player.getUniqueId())){
-					//Check if the Player name has changen and update it
-					if(!ChatColor.stripColor(ChatColor.stripColor(name)).equals(player.getName())){
-						sign.setLine(index, player.getName());
-						sign.update();
-					}
-					return true;
-				}
-				
-				// this to remove falsely generated uuid.
-				OfflinePlayer oplayer = Bukkit.getOfflinePlayer(uuid);
-				if (!oplayer.hasPlayedBefore()) {
-					if (Lockette.DEBUG) {
-						log.info("[Lockette] removing bad UUID");
-					}
-					removeUUIDMetadata(sign);
-				}
-			} else { // check the name history
-				List<String> names = getPreviousNames(player.getUniqueId());
-				for (String n : names) {
-					if (n.equalsIgnoreCase(name)) { // match!
-						if (Lockette.DEBUG) {
-							log.info("[Lockette] Found the match in the name history!");
-						}
-						
-						setLine(sign, index, player.getName(), player);
-						return true;
-					}
-				}
-			}
-		} catch (Exception e) {
-			log.info("[Lockette] Something bad happened returning match = false");
-			e.printStackTrace();
-		}
-		
-		return false;
-	}
+                     else {
+                     Lockette.log.log(Level.INFO, "[Lockette] Can't convert {0} !", line);
+                     setLine(sign, index, line);
+                     if (index == 1){
+                     sign.setLine(0, "[?]");
+                     }
+                     }
+                     */
+                }
+                // update sign for later uuid check!
+                sign.update();
+            }
 
-	// need to put this back in because others might be using it.
-	public static boolean isOwner(Block block, String name){
-		return isOwner(block, Bukkit.getOfflinePlayer(name));
-	}
+            uuid = getUUIDFromMeta(sign, index);
 
-	public static boolean isUser(Block block, String name, boolean withGroups){
-		return isUser(block, Bukkit.getOfflinePlayer(name), withGroups);
-	}
-	
-	public static boolean isOwner(Block block, OfflinePlayer player){
-		if (!enabled)
-			return true;
-		
-		Block checkBlock = Lockette.findBlockOwner(block);
-		if (checkBlock == null)
-			return true;
-		
-		Sign sign = (Sign) checkBlock.getState();
-		
-		// Check owner only.
-		return matchUserUUID(sign, 1, player, true);
-	}
+            if (Lockette.DEBUG) {
+                log.info("[Lockette] uuid on the sign = " + uuid);
+                log.info("[Lockette] player's uuid    = " + player.getUniqueId());
+            }
 
-	public static boolean isOwner(Sign sign, OfflinePlayer player){
-		// Check owner only.
-		return matchUserUUID(sign, 1, player, true);
-	}
-	
-	public static boolean isUser(Block block, OfflinePlayer player, boolean withGroups){
-		if (!enabled)
-			return true;
-		
-		Block signBlock = Lockette.findBlockOwner(block);
-		
-		if (signBlock == null)
-			return true;
-		
-		// Check main three users.
-		Sign sign = (Sign) signBlock.getState();
-		
-		for(int y = 1; y <= 3; ++y) {
-			String line = sign.getLine(y);
-			if (matchUserUUID(sign, y, player, true)) {// Check if the name is there verbatum.
-				return true;
-			}
-			
-			// Check if name is in a group listed on the sign.
-			if (withGroups)
-				if (plugin.inGroup(block.getWorld(), player.getName(), line))
-					return true;
-		}
-		
-		// Check for more users.
-		List<Block>	list = Lockette.findBlockUsers(block, signBlock);
-		for (Block blk : list) {
-			sign = (Sign) blk.getState();
-			
-			for (int y = 1; y <= 3; y++) {
-				String line = sign.getLine(y);
-				if (matchUserUUID(sign, y, player, true)) {// Check if the name is there verbatum.
-					return true;
-				}
-				
-				// Check if name is in a group listed on the sign.
-				if(withGroups)
-					if(plugin.inGroup(block.getWorld(), player.getName(), line))
-						return true;
-			}
-		}
-		
-		// User doesn't have permission.
-		return false;
-	}
+            if (uuid != null) {
+                if (uuid.equals(player.getUniqueId())) {
+                    //Check if the Player name has changen and update it
+                    if (!ChatColor.stripColor(ChatColor.stripColor(name)).equals(player.getName())) {
+                        sign.setLine(index, player.getName());
+                        sign.update();
+                    }
+                    return true;
+                }
 
-	
-	private static String NAME_HISTORY_URL = "https://api.mojang.com/user/profiles/";
-	private static final JSONParser jsonParser = new JSONParser();
-	private static List<String> getPreviousNames(UUID uuid) {
-		String name = null;
-		List<String> list = new ArrayList<String>();
+                // this to remove falsely generated uuid.
+                OfflinePlayer oplayer = Bukkit.getOfflinePlayer(uuid);
+                if (!oplayer.hasPlayedBefore()) {
+                    if (Lockette.DEBUG) {
+                        log.info("[Lockette] removing bad UUID");
+                    }
+                    removeUUIDMetadata(sign);
+                }
+            } else { // check the name history
+                List<String> names = getPreviousNames(player.getUniqueId());
+                for (String n : names) {
+                    if (n.equalsIgnoreCase(name)) { // match!
+                        if (Lockette.DEBUG) {
+                            log.info("[Lockette] Found the match in the name history!");
+                        }
 
-		try {
-			if (name == null) {
-				HttpURLConnection connection = (HttpURLConnection) new URL(NAME_HISTORY_URL + uuid.toString().replace("-", "") + "/names").openConnection();
-				JSONArray array = (JSONArray) jsonParser.parse(new InputStreamReader(connection.getInputStream()));
-				
-				Iterator<JSONObject> iterator = array.iterator();
-				while (iterator.hasNext()) {
-					JSONObject obj = (JSONObject) iterator.next();
-					list.add((String)obj.get("name"));
-				}
-			}
-		} catch (Exception ioe) {
-			log.info("[Lockette] Failed to get Name history!");
-		}
-		return list;
-	}
+                        setLine(sign, index, player.getName(), player);
+                        return true;
+                    }
+                }
+            }
+        } catch (Exception e) {
+            log.info("[Lockette] Something bad happened returning match = false");
+            e.printStackTrace();
+        }
+
+        return false;
+    }
+
+    // need to put this back in because others might be using it.
+    public static boolean isOwner(Block block, String name) {
+        return isOwner(block, Bukkit.getOfflinePlayer(name));
+    }
+
+    public static boolean isUser(Block block, String name, boolean withGroups) {
+        return isUser(block, Bukkit.getOfflinePlayer(name), withGroups);
+    }
+
+    public static boolean isOwner(Block block, OfflinePlayer player) {
+        if (!enabled) {
+            return true;
+        }
+
+        Block checkBlock = Lockette.findBlockOwner(block);
+        if (checkBlock == null) {
+            return true;
+        }
+
+        Sign sign = (Sign) checkBlock.getState();
+
+        // Check owner only.
+        return matchUserUUID(sign, 1, player, true);
+    }
+
+    public static boolean isOwner(Sign sign, OfflinePlayer player) {
+        // Check owner only.
+        return matchUserUUID(sign, 1, player, true);
+    }
+
+    public static boolean isUser(Block block, OfflinePlayer player, boolean withGroups) {
+        if (!enabled) {
+            return true;
+        }
+
+        Block signBlock = Lockette.findBlockOwner(block);
+
+        if (signBlock == null) {
+            return true;
+        }
+
+        // Check main three users.
+        Sign sign = (Sign) signBlock.getState();
+
+        for (int y = 1; y <= 3; ++y) {
+            String line = sign.getLine(y);
+            if (matchUserUUID(sign, y, player, true)) {// Check if the name is there verbatum.
+                return true;
+            }
+
+            // Check if name is in a group listed on the sign.
+            if (withGroups) {
+                if (plugin.inGroup(block.getWorld(), player.getName(), line)) {
+                    return true;
+                }
+            }
+        }
+
+        // Check for more users.
+        List<Block> list = Lockette.findBlockUsers(block, signBlock);
+        for (Block blk : list) {
+            sign = (Sign) blk.getState();
+
+            for (int y = 1; y <= 3; y++) {
+                String line = sign.getLine(y);
+                if (matchUserUUID(sign, y, player, true)) {// Check if the name is there verbatum.
+                    return true;
+                }
+
+                // Check if name is in a group listed on the sign.
+                if (withGroups) {
+                    if (plugin.inGroup(block.getWorld(), player.getName(), line)) {
+                        return true;
+                    }
+                }
+            }
+        }
+
+        // User doesn't have permission.
+        return false;
+    }
+
+    private static String NAME_HISTORY_URL = "https://api.mojang.com/user/profiles/";
+    private static final JSONParser jsonParser = new JSONParser();
+
+    private static List<String> getPreviousNames(UUID uuid) {
+        String name = null;
+        List<String> list = new ArrayList<String>();
+
+        try {
+            if (name == null) {
+                HttpURLConnection connection = (HttpURLConnection) new URL(NAME_HISTORY_URL + uuid.toString().replace("-", "") + "/names").openConnection();
+                JSONArray array = (JSONArray) jsonParser.parse(new InputStreamReader(connection.getInputStream()));
+
+                Iterator<JSONObject> iterator = array.iterator();
+                while (iterator.hasNext()) {
+                    JSONObject obj = (JSONObject) iterator.next();
+                    list.add((String) obj.get("name"));
+                }
+            }
+        } catch (Exception ioe) {
+            log.info("[Lockette] Failed to get Name history!");
+        }
+        return list;
+    }
 }
-
