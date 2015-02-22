@@ -70,7 +70,8 @@
                     </execution>
                 </executions>
             </plugin>
-            <plugin>
+            <!--Not needed, But leave in for later reference PLEASE!!
+            <plugin> 
                 <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-shade-plugin</artifactId>
                 <version>2.1</version>
@@ -89,7 +90,7 @@
                         </configuration>
                     </execution>
                 </executions>
-            </plugin>
+            </plugin>-->
         </plugins>
         <resources>
             <resource>
