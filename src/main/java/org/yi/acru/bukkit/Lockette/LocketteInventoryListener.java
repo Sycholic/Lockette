@@ -7,26 +7,29 @@
 
 package org.yi.acru.bukkit.Lockette;
 
-import java.util.*;
-import org.bukkit.block.*;
-import org.bukkit.event.*;
-import org.bukkit.event.inventory.*;
-import org.bukkit.inventory.*;
-import org.bukkit.plugin.*;
 
+import java.util.UUID;
+import org.bukkit.block.Block;
+import org.bukkit.block.BlockState;
+import org.bukkit.block.DoubleChest;
+import org.bukkit.event.EventHandler;
+import org.bukkit.event.Listener;
+import org.bukkit.event.inventory.InventoryMoveItemEvent;
+import org.bukkit.inventory.Inventory;
+import org.bukkit.inventory.InventoryHolder;
+import org.bukkit.plugin.PluginManager;
 import org.yi.acru.bukkit.BlockUtil;
 
 public class LocketteInventoryListener implements Listener{
-	private static Lockette		plugin;
+	private static Lockette	plugin;
 	
 	public LocketteInventoryListener(Lockette instance){
 		this.plugin = instance;
 	}
 	
 	protected void registerEvents(){
-		PluginManager	pm = this.plugin.getServer().getPluginManager();
-
-		pm.registerEvents(this, this.plugin);
+            PluginManager pm = this.plugin.getServer().getPluginManager();
+            pm.registerEvents(this, this.plugin);
 	}
 	
 	
@@ -34,9 +37,10 @@ public class LocketteInventoryListener implements Listener{
 	// Start of event section
 
 	private boolean isProtected(Inventory inv, boolean allowEveryone) {
-		if (!Lockette.blockHopper)
-			return false;
-		
+		if (!Lockette.blockHopper) {
+                    return false;
+                }
+                
 		InventoryHolder holder = inv.getHolder();
 
 		if (holder instanceof DoubleChest) {
@@ -127,4 +131,3 @@ public class LocketteInventoryListener implements Listener{
 		}
 	}
 }
-

@@ -83,6 +83,7 @@ public class Lockette extends PluginCore {
 	}
 	
 	
+        @Override
 	public void onEnable(){
 		if(enabled) return;
 		
@@ -158,6 +159,7 @@ public class Lockette extends PluginCore {
 	}
 	
 	
+        @Override
 	public void onDisable(){
 		if(!enabled) return;
 		log.info(this.getDescription().getName() + " is being disabled...  ;.;");
@@ -173,6 +175,7 @@ public class Lockette extends PluginCore {
 	}
 	
 	
+        @Override
 	public boolean onCommand(CommandSender sender, Command cmd, String commandLabel, String[] args){
 		if(!cmd.getName().equalsIgnoreCase("lockette")) return(false);
 		if(sender instanceof Player) return(true);	// Handling in command preprocess for now.
@@ -196,7 +199,7 @@ public class Lockette extends PluginCore {
 	}
 	
 	
-	@SuppressWarnings("unchecked")
+	//@SuppressWarnings("unchecked") Not needed anymore i guess.
 	protected void loadProperties(boolean reload){
 		if(reload){
 			log.info("[" + getDescription().getName() + "] Reloading plugin configuration files.");
@@ -204,8 +207,8 @@ public class Lockette extends PluginCore {
 		}
 		
 		
-		FileConfiguration	properties = this.getConfig();
-		boolean				propChanged = true;
+		FileConfiguration properties = this.getConfig();
+		boolean	propChanged = true;
 		//boolean			tempBoolean;
 		
 
@@ -381,7 +384,7 @@ public class Lockette extends PluginCore {
 			}
 			else log.warning("[" + getDescription().getName() + "] Returning to default strings.");
 		}
-		catch(Exception ex){}
+		catch(IOException ex){}
 		
 		
 		// To remove French tags from the default strings file, and to not save to alternate strings files.
@@ -396,8 +399,7 @@ public class Lockette extends PluginCore {
 				try{
 					strings.save(stringsFile);
 					strings.load(stringsFile);
-				}
-				catch(Exception ex){}
+				} catch (IOException | InvalidConfigurationException ex) {}
 			}
 			
 			strings.set("author", "Acru");
@@ -692,17 +694,17 @@ public class Lockette extends PluginCore {
 	public static boolean isProtected(Block block){
 		if(!enabled) return(false);
 		
-		int			type = block.getTypeId();
+		int type = block.getTypeId();
 		
 		if(type == Material.WALL_SIGN.getId()){
-			Sign		sign = (Sign) block.getState();
-			String		text = sign.getLine(0).replaceAll("(?i)\u00A7[0-F]", "").toLowerCase();
+			Sign sign = (Sign) block.getState();
+			String text = sign.getLine(0).replaceAll("(?i)\u00A7[0-F]", "").toLowerCase();
 			
 			if(text.equals("[private]") || text.equalsIgnoreCase(altPrivate)){
 				return(true);
 			}
 			else if(text.equals("[more users]") || text.equalsIgnoreCase(altMoreUsers)){
-				Block		checkBlock = getSignAttachedBlock(block);
+				Block checkBlock = getSignAttachedBlock(block);
 				
 				if(checkBlock != null) if(findBlockOwner(checkBlock) != null){
 					return(true);
@@ -798,11 +800,13 @@ public class Lockette extends PluginCore {
 	// Start of external permissions section
 	
 	
+        @Override
 	protected boolean pluginEnableOverride(String pluginName){
 		return(isInList(pluginName, Lockette.disabledPluginList));
 	}
 	
 	
+        @Override
 	protected boolean usingExternalPermissions(){
 		if(!usePermissions) return(false);
 		return(super.usingExternalPermissions());
@@ -810,16 +814,19 @@ public class Lockette extends PluginCore {
 	}
 	
 	
+        @Override
 	protected boolean usingExternalZones(){
 		return(super.usingExternalZones());
 	}
 	
 	
+        @Override
 	protected String getLocalizedEveryone(){
 		return(altEveryone);
 	}
 	
 	
+        @Override
 	protected String getLocalizedOperators(){
 		return(altOperators);
 	}
@@ -1469,9 +1476,7 @@ public class Lockette extends PluginCore {
 		try{
 			if(!wooden) block.getWorld().playEffect(block.getLocation(), Effect.DOOR_TOGGLE, 0);
 		}
-		catch(NoSuchFieldError ex){}
-		catch(NoSuchMethodError ex){}
-		catch(NoClassDefFoundError ex){}
+		catch(NoSuchFieldError | NoSuchMethodError | NoClassDefFoundError ex){}
 		
 		return(list);
 	}
@@ -1506,9 +1511,7 @@ public class Lockette extends PluginCore {
 			try{
 				if(effect) block.getWorld().playEffect(block.getLocation(), Effect.DOOR_TOGGLE, 0);
 			}
-			catch(NoSuchFieldError ex){}
-			catch(NoSuchMethodError ex){}
-			catch(NoClassDefFoundError ex){}
+			catch(NoSuchFieldError | NoSuchMethodError | NoClassDefFoundError ex){}
 		}
 	}
 	

@@ -91,15 +91,15 @@ public class LocketteBlockListener implements Listener {
             //Lockette.log.info("Canceling Minecart + protectedDest:" + protectedDest);
             event.setCancelled(true);
         }
-        if (event.getDestination().getHolder() instanceof HopperMinecart & protectedSource) {
+        else if (event.getDestination().getHolder() instanceof HopperMinecart & protectedSource) {
             //Lockette.log.info("Canceling Minecart + protectedSource:" + protectedSource);
             event.setCancelled(true);
         }
-        if (event.getSource().getHolder() instanceof StorageMinecart & protectedDest) {
+        else if (event.getSource().getHolder() instanceof StorageMinecart & protectedDest) {
             //Lockette.log.info("Canceling Minecart + protectedDest:" + protectedDest);
             event.setCancelled(true);
         }
-        if (event.getDestination().getHolder() instanceof StorageMinecart & protectedSource) {
+        else if (event.getDestination().getHolder() instanceof StorageMinecart & protectedSource) {
             //Lockette.log.info("Canceling Minecart + protectedSource:" + protectedSource);
             event.setCancelled(true);
         }
