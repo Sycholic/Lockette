@@ -107,14 +107,10 @@ public class LocketteInventoryListener implements Listener {
             }
         }
 
-        if (((srcOwner == meOwner) && (meOwner == destOwner))
+        return ((srcOwner == meOwner) && (meOwner == destOwner))
                 || ((srcOwner == meOwner) && (destOwner == null))
                 || ((srcOwner == null) && (meOwner == destOwner))
-                || ((srcOwner == null) && (destOwner == null))) {
-            return true;
-        }
-
-        return false;
+                || ((srcOwner == null) && (destOwner == null));
     }
 
     @EventHandler
