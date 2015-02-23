@@ -984,17 +984,17 @@ public class Lockette extends PluginCore {
     // Version for finding conflicts, when creating a new sign.
     // Ignore the sign being made, in case another plugin has set the text of the sign prematurely.
     protected static Block findBlockOwner(Block block, Block ignoreBlock, boolean iterateFurther) {
+        Lockette.log.info("FindBlockOwner( " + block + " " + ignoreBlock + " " + iterateFurther + " )");
+
         if (block == null) {
             return null;
         }
 
         int type = block.getTypeId();
-        Location ignore;
+        Location ignore = null;
 
         if (ignoreBlock != null) {
             ignore = ignoreBlock.getLocation();
-        } else {
-            ignore = null;
         }
 
         // Check known block types.
@@ -1158,11 +1158,7 @@ public class Lockette extends PluginCore {
 
                 if (ignore == null) {
                     doCheck = true;
-                } else if (checkBlock.getLocation().equals(ignore)) {
-                    doCheck = false;
-                } else {
-                    doCheck = true;
-                }
+                } else doCheck = !checkBlock.getLocation().equals(ignore);
 
                 if (doCheck) {
                     Sign sign = (Sign) checkBlock.getState();
@@ -1190,11 +1186,7 @@ public class Lockette extends PluginCore {
 
                 if (ignore == null) {
                     doCheck = true;
-                } else if (checkBlock.getLocation().equals(ignore)) {
-                    doCheck = false;
-                } else {
-                    doCheck = true;
-                }
+                } else doCheck = !checkBlock.getLocation().equals(ignore);
 
                 if (doCheck) {
                     Sign sign = (Sign) checkBlock.getState();
@@ -1222,11 +1214,7 @@ public class Lockette extends PluginCore {
 
                 if (ignore == null) {
                     doCheck = true;
-                } else if (checkBlock.getLocation().equals(ignore)) {
-                    doCheck = false;
-                } else {
-                    doCheck = true;
-                }
+                } else doCheck = !checkBlock.getLocation().equals(ignore);
 
                 if (doCheck) {
                     Sign sign = (Sign) checkBlock.getState();
@@ -1254,11 +1242,7 @@ public class Lockette extends PluginCore {
 
                 if (ignore == null) {
                     doCheck = true;
-                } else if (checkBlock.getLocation().equals(ignore)) {
-                    doCheck = false;
-                } else {
-                    doCheck = true;
-                }
+                } else doCheck = !checkBlock.getLocation().equals(ignore);
 
                 if (doCheck) {
                     Sign sign = (Sign) checkBlock.getState();
@@ -1304,7 +1288,7 @@ public class Lockette extends PluginCore {
         Block checkBlock;
         int type;
         byte face;
-        List<Block> list = new ArrayList<Block>();
+        List<Block> list = new ArrayList<>();
 
         // Experimental door code, check up and down.
         if (iterateUp) {
@@ -1554,7 +1538,7 @@ public class Lockette extends PluginCore {
 
     // Toggle all doors.  (Used by rightclick action to get door list.)
     protected static List<Block> toggleDoors(Block block, Block keyBlock, boolean wooden, boolean trap) {
-        List<Block> list = new ArrayList<Block>();
+        List<Block> list = new ArrayList<>();
 
         toggleDoorBase(block, keyBlock, !trap, wooden, list);
         try {
@@ -2027,12 +2011,12 @@ public class Lockette extends PluginCore {
         return false;
     }
 
-    private static String NAME_HISTORY_URL = "https://api.mojang.com/user/profiles/";
+    private static final String NAME_HISTORY_URL = "https://api.mojang.com/user/profiles/";
     private static final JSONParser jsonParser = new JSONParser();
 
     private static List<String> getPreviousNames(UUID uuid) {
         String name = null;
-        List<String> list = new ArrayList<String>();
+        List<String> list = new ArrayList<>();
 
         try {
             if (name == null) {
@@ -2045,7 +2029,7 @@ public class Lockette extends PluginCore {
                     list.add((String) obj.get("name"));
                 }
             }
-        } catch (Exception ioe) {
+        } catch (IOException | ParseException ioe) {
             log.info("[Lockette] Failed to get Name history!");
         }
         return list;
