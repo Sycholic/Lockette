@@ -6,7 +6,7 @@
 package org.yi.acru.bukkit.Lockette;
 
 // Imports.
-import org.bukkit.Material;
+import java.util.*;
 import org.bukkit.block.Block;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.EventPriority;
@@ -37,11 +37,25 @@ public class LocketteEntityListener implements Listener {
             return;
         }
 
-        //List<Block> blockList = event.blockList();
-        int x;//, count = event.blockList().size();
-        Block block;
+ //int x;//, count = event.blockList().size();
+        //Block block;
+// Check the block list for any protected blocks, and cancel the event if any are found.
+// Check the block list for any protected blocks, and cancel the event if any are found.
+        Iterator<Block> it = event.blockList().iterator();
+        while (it.hasNext()) {
+            Block block = it.next();
+            if (Lockette.isProtected(block)) {
+                it.remove();
+                continue;
+            }
+            if (Lockette.explosionProtectionAll) {
+                if (BlockUtil.isInList(block.getTypeId(), BlockUtil.materialListNonDoors)) {
+                    it.remove();
+                }
+            }
+        }
 
-        // Check the block list for any protected blocks, and cancel the event if any are found.
+        /* Check the block list for any protected blocks, and cancel the event if any are found.
         for (x = 0; x < event.blockList().size(); ++x) {
 
             if (Lockette.explosionProtectionAll) {
@@ -66,6 +80,6 @@ public class LocketteEntityListener implements Listener {
                     continue;
                 }
             }
-        }
+        }*/
     }
 }

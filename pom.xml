@@ -4,7 +4,7 @@
     <groupId>org.yi.acru.bukkit.Lockette</groupId>
     <artifactId>Lockette</artifactId>
     <packaging>jar</packaging>
-    <version>1.8.13</version>
+    <version>1.8.14</version>
     <name>Lockette</name>
     <url>http://maven.apache.org</url>
     <properties>
