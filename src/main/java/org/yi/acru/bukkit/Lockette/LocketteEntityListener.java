@@ -18,7 +18,7 @@ import org.yi.acru.bukkit.BlockUtil;
 
 public class LocketteEntityListener implements Listener {
 
-    private static Lockette plugin;
+    private Lockette plugin;
 
     public LocketteEntityListener(Lockette instance) {
         plugin = instance;
@@ -44,11 +44,11 @@ public class LocketteEntityListener implements Listener {
         Iterator<Block> it = event.blockList().iterator();
         while (it.hasNext()) {
             Block block = it.next();
-            if (Lockette.isProtected(block)) {
+            if (plugin.isProtected(block)) {
                 it.remove();
                 continue;
             }
-            if (Lockette.explosionProtectionAll) {
+            if (plugin.explosionProtectionAll) {
                 if (BlockUtil.isInList(block.getTypeId(), BlockUtil.materialListNonDoors)) {
                     it.remove();
                 }

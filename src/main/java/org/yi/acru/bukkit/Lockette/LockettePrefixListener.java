@@ -20,7 +20,7 @@ import org.bukkit.event.block.SignChangeEvent;
 
 public class LockettePrefixListener implements Listener {
 
-    private static Lockette plugin;
+    private Lockette plugin;
 
     public LockettePrefixListener(Lockette instance) {
         plugin = instance;
@@ -48,12 +48,12 @@ public class LockettePrefixListener implements Listener {
             Sign sign = (Sign) block.getState();
             String text = ChatColor.stripColor(sign.getLine(0));
 
-            if (text.equalsIgnoreCase("[Private]") || text.equalsIgnoreCase(Lockette.altPrivate) || text.equalsIgnoreCase("[More Users]") || text.equalsIgnoreCase(Lockette.altMoreUsers)) {
+            if (text.equalsIgnoreCase("[Private]") || text.equalsIgnoreCase(plugin.altPrivate) || text.equalsIgnoreCase("[More Users]") || text.equalsIgnoreCase(plugin.altMoreUsers)) {
                 // Okay, sign already exists and someone managed to send an event to replace.
                 // Cancel it!  Also, set event text to sign text, just in case.
                 // And check for this later in queue.
-                if (Lockette.DEBUG) {
-                    Lockette.log.info("[Lockette] Sign already exists, resetting");
+                if (plugin.DEBUG) {
+                    plugin.log.info("[Lockette] Sign already exists, resetting");
                 }
 
                 event.setCancelled(true);
@@ -61,7 +61,7 @@ public class LockettePrefixListener implements Listener {
                 event.setLine(1, sign.getLine(1));
                 event.setLine(2, sign.getLine(2));
                 event.setLine(3, sign.getLine(3));
-                Lockette.log.info("[" + plugin.getDescription().getName() + "] " + player.getName() + " just tried to change a non-editable sign. (Bukkit bug, or plugin conflict?)");
+                plugin.log.info("[" + plugin.getDescription().getName() + "] " + player.getName() + " just tried to change a non-editable sign. (Bukkit bug, or plugin conflict?)");
                 return;
             }
         } else if (typeSignPost) {
@@ -69,7 +69,7 @@ public class LockettePrefixListener implements Listener {
         } else {
             // Not a sign, wtf!
             event.setCancelled(true);
-            Lockette.log.info("[" + plugin.getDescription().getName() + "] " + player.getName() + " just tried to set text for a non-sign. (Bukkit bug, or hacked client?)");
+            plugin.log.info("[" + plugin.getDescription().getName() + "] " + player.getName() + " just tried to set text for a non-sign. (Bukkit bug, or hacked client?)");
             return;
         }
 
@@ -91,7 +91,7 @@ public class LockettePrefixListener implements Listener {
          }
          */
         // Colorizer code.
-        if (Lockette.colorTags) {
+        if (plugin.colorTags) {
             event.setLine(0, event.getLine(0).replaceAll("&([0-9A-Fa-f])", "\u00A7$1"));
             event.setLine(1, event.getLine(1).replaceAll("&([0-9A-Fa-f])", "\u00A7$1"));
             event.setLine(2, event.getLine(2).replaceAll("&([0-9A-Fa-f])", "\u00A7$1"));

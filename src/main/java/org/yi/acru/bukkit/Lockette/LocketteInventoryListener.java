@@ -19,8 +19,7 @@ import org.yi.acru.bukkit.BlockUtil;
 
 public class LocketteInventoryListener implements Listener {
 
-    private static Lockette plugin;
-
+    private Lockette plugin;
     public LocketteInventoryListener(Lockette instance) {
         this.plugin = instance;
     }
@@ -33,7 +32,7 @@ public class LocketteInventoryListener implements Listener {
     //**************************************************************************
     // Start of event section
     private boolean isProtected(Inventory inv, boolean allowEveryone) {
-        if (!Lockette.blockHopper) {
+        if (!plugin.blockHopper) {
             return false;
         }
 
@@ -47,8 +46,8 @@ public class LocketteInventoryListener implements Listener {
             Block block = ((BlockState) holder).getBlock();
             int type = block.getTypeId();
             if (BlockUtil.isInList(type, BlockUtil.materialListNonDoors)
-                    || Lockette.isInList(type, Lockette.customBlockList)) {
-                return (allowEveryone && Lockette.isEveryone(block)) ? false : Lockette.isProtected(block);
+                    || plugin.isInList(type, plugin.customBlockList)) {
+                return (allowEveryone && plugin.isEveryone(block)) ? false : plugin.isProtected(block);
             }
         }
 
@@ -56,7 +55,7 @@ public class LocketteInventoryListener implements Listener {
     }
 
     private boolean passThrough(Inventory src, Inventory dest, Inventory me) {
-        if (!Lockette.blockHopper) {
+        if (!plugin.blockHopper) {
             return true;
         }
         UUID srcOwner = null;
@@ -71,8 +70,8 @@ public class LocketteInventoryListener implements Listener {
 
             if (holder instanceof BlockState) {
                 Block block = ((BlockState) holder).getBlock();
-                srcOwner = Lockette.getProtectedOwnerUUID(block);
-                if (Lockette.isEveryone(block)) {
+                srcOwner = plugin.getProtectedOwnerUUID(block);
+                if (plugin.isEveryone(block)) {
                     srcOwner = null;
                 }
             }
@@ -85,8 +84,8 @@ public class LocketteInventoryListener implements Listener {
 
             if (holder instanceof BlockState) {
                 Block block = ((BlockState) holder).getBlock();
-                destOwner = Lockette.getProtectedOwnerUUID(block);
-                if (Lockette.isEveryone(block)) {
+                destOwner = plugin.getProtectedOwnerUUID(block);
+                if (plugin.isEveryone(block)) {
                     destOwner = null;
                 }
             }
@@ -100,8 +99,8 @@ public class LocketteInventoryListener implements Listener {
 
             if (holder instanceof BlockState) {
                 Block block = ((BlockState) holder).getBlock();
-                meOwner = Lockette.getProtectedOwnerUUID(block);
-                if (Lockette.isEveryone(block)) {
+                meOwner = plugin.getProtectedOwnerUUID(block);
+                if (plugin.isEveryone(block)) {
                     meOwner = null;
                 }
             }

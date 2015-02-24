@@ -43,13 +43,13 @@ import org.json.simple.parser.*;
 
 public class Lockette extends PluginCore {
 
-    static boolean DEBUG = false;
+    boolean DEBUG = false;
 
-    private static Lockette plugin;
-    private static boolean enabled = false;
+    private Lockette plugin;
+    private boolean enabled = false;
 
-    private static boolean uuidSupport = false;
-    private static boolean registered = false;
+    private boolean uuidSupport = false;
+    private boolean registered = false;
     private final LocketteBlockListener blockListener = new LocketteBlockListener(this);
     private final LocketteEntityListener entityListener = new LocketteEntityListener(this);
     private final LockettePlayerListener playerListener = new LockettePlayerListener(this);
@@ -58,22 +58,22 @@ public class Lockette extends PluginCore {
     private final LocketteInventoryListener inventoryListener = new LocketteInventoryListener(this);
     protected final LocketteDoorCloser doorCloser = new LocketteDoorCloser(this);
 
-    protected static boolean explosionProtectionAll, rotateChests;
-    protected static boolean adminSnoop, adminBypass, adminBreak;
-    protected static boolean protectDoors, protectTrapDoors, usePermissions;
-    protected static boolean directPlacement, colorTags, debugMode;
-    protected static boolean blockHopper = false;
-    protected static int defaultDoorTimer;
-    protected static String broadcastSnoopTarget, broadcastBreakTarget, broadcastReloadTarget;
+    protected  boolean explosionProtectionAll, rotateChests;
+    protected boolean adminSnoop, adminBypass, adminBreak;
+    protected boolean protectDoors, protectTrapDoors, usePermissions;
+    protected boolean directPlacement, colorTags, debugMode;
+    protected boolean blockHopper = false;
+    protected int defaultDoorTimer;
+    protected String broadcastSnoopTarget, broadcastBreakTarget, broadcastReloadTarget;
 
-    protected static boolean msgUser, msgOwner, msgAdmin, msgError, msgHelp;
-    protected static String altPrivate, altMoreUsers, altEveryone, altOperators, altTimer, altFee;
-    protected static List<Object> customBlockList = null, disabledPluginList = null;
+    protected boolean msgUser, msgOwner, msgAdmin, msgError, msgHelp;
+    protected String altPrivate, altMoreUsers, altEveryone, altOperators, altTimer, altFee;
+    protected List<Object> customBlockList = null, disabledPluginList = null;
 
-    protected static FileConfiguration strings = null;
+    protected FileConfiguration strings = null;
     protected final HashMap<String, Block> playerList = new HashMap<String, Block>();
 
-    private static final String META_KEY = "LocketteUUIDs";
+    private final String META_KEY = "LocketteUUIDs";
 
     public Lockette() {
         plugin = this;
@@ -185,7 +185,7 @@ public class Lockette extends PluginCore {
             if (args[0].equalsIgnoreCase("reload")) {
                 loadProperties(true);
 
-                localizedMessage(null, Lockette.broadcastReloadTarget, "msg-admin-reload");
+                localizedMessage(null, broadcastReloadTarget, "msg-admin-reload");
 
                 //String msgString = Lockette.strings.getString("msg-admin-reload");
                 //selectiveBroadcast(Lockette.broadcastReloadTarget, ChatColor.RED + "Lockette: " + msgString);
@@ -655,7 +655,7 @@ public class Lockette extends PluginCore {
 
     //********************************************************************************************************************
     // Start of public section
-    public static boolean isProtected(Block block) {
+    public boolean isProtected(Block block) {
         if (!enabled) {
             return (false);
         }
@@ -677,19 +677,19 @@ public class Lockette extends PluginCore {
                     }
                 }
             }
-        } else if (Lockette.findBlockOwner(block) != null) {
-            Lockette.log.info("--- FindBlockOwner(" + block + ") != null.  Returning TRUE. Lockette thinks something is protecting this.");
+        } else if (findBlockOwner(block) != null) {
+            log.info("--- FindBlockOwner(" + block + ") != null.  Returning TRUE. Lockette thinks something is protecting this.");
             return (true);
         }
 
         return (false);
     }
 
-    public static String getProtectedOwner(Block block) {
+    public String getProtectedOwner(Block block) {
         return Bukkit.getOfflinePlayer(getProtectedOwnerUUID(block)).getName();
     }
 
-    public static UUID getProtectedOwnerUUID(Block block) {
+    public UUID getProtectedOwnerUUID(Block block) {
         if (!enabled) {
             return (null);
         }
@@ -715,7 +715,7 @@ public class Lockette extends PluginCore {
                 }
             }
         } else {
-            Block signBlock = Lockette.findBlockOwner(block);
+            Block signBlock = findBlockOwner(block);
             if (signBlock != null) {
                 Sign sign = (Sign) signBlock.getState();
                 return getUUIDFromMeta(sign, 1);
@@ -725,12 +725,12 @@ public class Lockette extends PluginCore {
         return null;
     }
 
-    public static boolean isEveryone(Block block) {
+    public boolean isEveryone(Block block) {
         if (!enabled) {
             return (true);
         }
 
-        Block signBlock = Lockette.findBlockOwner(block);
+        Block signBlock = findBlockOwner(block);
 
         if (signBlock == null) {
             return (true);
@@ -745,14 +745,14 @@ public class Lockette extends PluginCore {
             if (!sign.getLine(y).isEmpty()) {
                 line = sign.getLine(y).replaceAll("(?i)\u00A7[0-F]", "");
 
-                if (line.equalsIgnoreCase("[Everyone]") || line.equalsIgnoreCase(Lockette.altEveryone)) {
+                if (line.equalsIgnoreCase("[Everyone]") || line.equalsIgnoreCase(altEveryone)) {
                     return (true);
                 }
             }
         }
 
         // Check for more users.
-        List<Block> list = Lockette.findBlockUsers(block, signBlock);
+        List<Block> list = findBlockUsers(block, signBlock);
         int x, count = list.size();
 
         for (x = 0; x < count; ++x) {
@@ -762,7 +762,7 @@ public class Lockette extends PluginCore {
                 if (!sign.getLine(y).isEmpty()) {
                     line = sign.getLine(y).replaceAll("(?i)\u00A7[0-F]", "");
 
-                    if (line.equalsIgnoreCase("[Everyone]") || line.equalsIgnoreCase(Lockette.altEveryone)) {
+                    if (line.equalsIgnoreCase("[Everyone]") || line.equalsIgnoreCase(altEveryone)) {
                         return (true);
                     }
                 }
@@ -777,7 +777,7 @@ public class Lockette extends PluginCore {
     // Start of external permissions section
     @Override
     protected boolean pluginEnableOverride(String pluginName) {
-        return (isInList(pluginName, Lockette.disabledPluginList));
+        return (isInList(pluginName, disabledPluginList));
     }
 
     @Override
@@ -820,35 +820,35 @@ public class Lockette extends PluginCore {
         // Filter and color based on message type.
         if (key.startsWith("msg-user-")) {
             if (broadcast == null) {
-                if (!Lockette.msgUser) {
+                if (!msgUser) {
                     return;
                 }
             }
             color = ChatColor.YELLOW.toString();
         } else if (key.startsWith("msg-owner-")) {
             if (broadcast == null) {
-                if (!Lockette.msgOwner) {
+                if (!msgOwner) {
                     return;
                 }
             }
             color = ChatColor.GOLD.toString();
         } else if (key.startsWith("msg-admin-")) {
             if (broadcast == null) {
-                if (!Lockette.msgAdmin) {
+                if (!msgAdmin) {
                     return;
                 }
             }
             color = ChatColor.RED.toString();
         } else if (key.startsWith("msg-error-")) {
             if (broadcast == null) {
-                if (!Lockette.msgError) {
+                if (!msgError) {
                     return;
                 }
             }
             color = ChatColor.RED.toString();
         } else if (key.startsWith("msg-help-")) {
             if (broadcast == null) {
-                if (!Lockette.msgHelp) {
+                if (!msgHelp) {
                     return;
                 }
             }
@@ -884,22 +884,22 @@ public class Lockette extends PluginCore {
     // Version for determining if a container is released.
     // Should return non-null if destroying the block will surely cause the the sign to fall off.
     // Okay for trap doors, though could be optimized.
-    protected static Block findBlockOwnerBreak(Block block) {
+    protected Block findBlockOwnerBreak(Block block) {
         int type = block.getTypeId();
 
         // Check known block types.
         if (BlockUtil.isInList(type, BlockUtil.materialListChests)) {
             return (findBlockOwnerBase(block, null, false, false, false, false, false));
         }
-        if (BlockUtil.isInList(type, BlockUtil.materialListTools) || Lockette.isInList(type, Lockette.customBlockList)) {
+        if (BlockUtil.isInList(type, BlockUtil.materialListTools) || plugin.isInList(type, plugin.customBlockList)) {
             return (findBlockOwnerBase(block, null, false, false, false, false, false));
         }
-        if (Lockette.protectTrapDoors) {
+        if (plugin.protectTrapDoors) {
             if (BlockUtil.isInList(type, BlockUtil.materialListTrapDoors)) {
                 return (findBlockOwnerBase(block, null, false, false, false, false, false));
             }
         }
-        if (Lockette.protectDoors) {
+        if (plugin.protectDoors) {
             if (BlockUtil.isInList(type, BlockUtil.materialListDoors)) {
                 return (findBlockOwnerBase(block, null, false, true, true, false, false));
             }
@@ -913,7 +913,7 @@ public class Lockette extends PluginCore {
             return (checkBlock);
         }
 
-        if (Lockette.protectTrapDoors) {
+        if (protectTrapDoors) {
             // Need to check if there is a trap door attached to the block, and check for a sign attached there.
             // This is the bit that could be optimized.
 
@@ -958,7 +958,7 @@ public class Lockette extends PluginCore {
             }
         }
 
-        if (Lockette.protectDoors) {
+        if (protectDoors) {
             // Need to check if there is a door above block, and check for a sign attached there.
 
             checkBlock = block.getRelative(BlockFace.UP);
@@ -975,7 +975,7 @@ public class Lockette extends PluginCore {
     }
 
     // Find the owner for any 'block'.
-    protected static Block findBlockOwner(Block block) {
+    protected Block findBlockOwner(Block block) {
         // Pass to a special version with specific values.
         // Moved this next to the same overloaded function where it belongs.
         return (findBlockOwner(block, null, false));
@@ -983,8 +983,8 @@ public class Lockette extends PluginCore {
 
     // Version for finding conflicts, when creating a new sign.
     // Ignore the sign being made, in case another plugin has set the text of the sign prematurely.
-    protected static Block findBlockOwner(Block block, Block ignoreBlock, boolean iterateFurther) {
-        Lockette.log.info("FindBlockOwner( " + block + " " + ignoreBlock + " " + iterateFurther + " )");
+    protected Block findBlockOwner(Block block, Block ignoreBlock, boolean iterateFurther) {
+        plugin.log.info("FindBlockOwner( " + block + " " + ignoreBlock + " " + iterateFurther + " )");
 
         if (block == null) {
             return null;
@@ -1001,17 +1001,17 @@ public class Lockette extends PluginCore {
         if (BlockUtil.isInList(type, BlockUtil.materialListChests)) {
             return (findBlockOwnerBase(block, ignore, true, false, false, false, false));
         }
-        if (BlockUtil.isInList(type, BlockUtil.materialListTools) || Lockette.isInList(type, Lockette.customBlockList)) {
+        if (BlockUtil.isInList(type, BlockUtil.materialListTools) || plugin.isInList(type, plugin.customBlockList)) {
             return (findBlockOwnerBase(block, ignore, false, false, false, false, false));
         }
-        if (Lockette.protectTrapDoors) {
+        if (protectTrapDoors) {
             if (BlockUtil.isInList(type, BlockUtil.materialListTrapDoors)) {
                 // Need to check block it is attached to as well as other attached trap doors.
                 //return(findBlockOwnerBase(block, ignore, false, false, false, false, false));				
                 return (findBlockOwner(getTrapDoorAttachedBlock(block), ignoreBlock, false));
             }
         }
-        if (Lockette.protectDoors) {
+        if (protectDoors) {
             if (BlockUtil.isInList(type, BlockUtil.materialListDoors)) {
                 return (findBlockOwnerBase(block, ignore, true, true, true, true, iterateFurther));
             }
@@ -1019,7 +1019,7 @@ public class Lockette extends PluginCore {
 
         Block checkBlock, result;
 
-        if (Lockette.protectTrapDoors) {
+        if (protectTrapDoors) {
             // Check base block, as it might have the sign and it isn't checked below.
 
             checkBlock = findBlockOwnerBase(block, ignore, false, false, false, false, false);
@@ -1069,7 +1069,7 @@ public class Lockette extends PluginCore {
             }
         }
 
-        if (Lockette.protectDoors) {
+        if (protectDoors) {
             // Don't check the block but check for doors above then below the block, which includes the block.
 
             checkBlock = block.getRelative(BlockFace.UP);
@@ -1105,7 +1105,7 @@ public class Lockette extends PluginCore {
 
     // Should only be called by the above related functions.
     // Should generally not be passed a hinge block, only a known container or door.
-    private static Block findBlockOwnerBase(Block block, Location ignore, boolean iterate, boolean iterateUp, boolean iterateDown, boolean includeEnds, boolean iterateFurther) {
+    private Block findBlockOwnerBase(Block block, Location ignore, boolean iterate, boolean iterateUp, boolean iterateDown, boolean includeEnds, boolean iterateFurther) {
         Block checkBlock;
         int type;
         byte face;
@@ -1265,18 +1265,18 @@ public class Lockette extends PluginCore {
         return (null);
     }
 
-    protected static List<Block> findBlockUsers(Block block, Block signBlock) {
+    protected List<Block> findBlockUsers(Block block, Block signBlock) {
         int type = block.getTypeId();
 
         if (BlockUtil.isInList(type, BlockUtil.materialListChests)) {
             return (findBlockUsersBase(block, true, false, false, false, 0));
         }
-        if (Lockette.protectTrapDoors) {
+        if (protectTrapDoors) {
             if (BlockUtil.isInList(type, BlockUtil.materialListTrapDoors)) {
                 return (findBlockUsersBase(getTrapDoorAttachedBlock(block), false, false, false, true, 0));
             }
         }
-        if (Lockette.protectDoors) {
+        if (protectDoors) {
             if (BlockUtil.isInList(type, BlockUtil.materialListDoors)) {
                 return (findBlockUsersBase(block, true, true, true, false, signBlock.getY()));
             }
@@ -1284,7 +1284,7 @@ public class Lockette extends PluginCore {
         return (findBlockUsersBase(block, false, false, false, false, 0));
     }
 
-    private static List<Block> findBlockUsersBase(Block block, boolean iterate, boolean iterateUp, boolean iterateDown, boolean traps, int includeYPos) {
+    private List<Block> findBlockUsersBase(Block block, boolean iterate, boolean iterateUp, boolean iterateDown, boolean traps, int includeYPos) {
         Block checkBlock;
         int type;
         byte face;
@@ -1419,11 +1419,11 @@ public class Lockette extends PluginCore {
         return (list);
     }
 
-    protected static int findChestCountNear(Block block) {
+    protected int findChestCountNear(Block block) {
         return (findChestCountNearBase(block, (byte) 0));
     }
 
-    private static int findChestCountNearBase(Block block, byte face) {
+    private int findChestCountNearBase(Block block, byte face) {
         int count = 0;
         Block checkBlock;
 
@@ -1470,7 +1470,7 @@ public class Lockette extends PluginCore {
         return (count);
     }
 
-    protected static void rotateChestOrientation(Block block, BlockFace blockFace) {
+    protected void rotateChestOrientation(Block block, BlockFace blockFace) {
 
         if (!BlockUtil.isInList(block.getTypeId(), BlockUtil.materialListChests)) {
             return;
@@ -1537,7 +1537,7 @@ public class Lockette extends PluginCore {
     }
 
     // Toggle all doors.  (Used by rightclick action to get door list.)
-    protected static List<Block> toggleDoors(Block block, Block keyBlock, boolean wooden, boolean trap) {
+    protected List<Block> toggleDoors(Block block, Block keyBlock, boolean wooden, boolean trap) {
         List<Block> list = new ArrayList<>();
 
         toggleDoorBase(block, keyBlock, !trap, wooden, list);
@@ -1553,7 +1553,7 @@ public class Lockette extends PluginCore {
 
     // Toggle one door.  (Used only by pre-561 builds to fix for bug.)
     // Now also used to fix doors.
-    protected static void toggleSingleDoor(Block block) {
+    protected void toggleSingleDoor(Block block) {
         int type = block.getTypeId();
         //List<Block> list = new ArrayList<Block>();
 
@@ -1567,7 +1567,7 @@ public class Lockette extends PluginCore {
     }
 
     // Toggle half door, or trap door.  (Used by automatic door closer.)
-    protected static void toggleHalfDoor(Block block, boolean effect) {
+    protected void toggleHalfDoor(Block block, boolean effect) {
         int type = block.getTypeId();
 		//List<Block> list = new ArrayList<Block>();
 
@@ -1585,7 +1585,7 @@ public class Lockette extends PluginCore {
     }
 
     // Main recursive function for toggling a door pair.  (No good for trap doors.)
-    private static void toggleDoorBase(Block block, Block keyBlock, boolean iterateUpDown, boolean skipDoor, List<Block> list) {
+    private void toggleDoorBase(Block block, Block keyBlock, boolean iterateUpDown, boolean skipDoor, List<Block> list) {
         Block checkBlock;
 
         // Toggle this door.
@@ -1647,7 +1647,7 @@ public class Lockette extends PluginCore {
 
     //********************************************************************************************************************
     // Start of utility section
-    protected static int getSignOption(Block signBlock, String tag, String altTag, int defaultValue) {
+    protected int getSignOption(Block signBlock, String tag, String altTag, int defaultValue) {
         Sign sign = (Sign) signBlock.getState();
 
         // Check main two users.
@@ -1705,7 +1705,7 @@ public class Lockette extends PluginCore {
         return (defaultValue);
     }
 
-    protected static boolean isInList(Object target, List<Object> list) {
+    protected boolean isInList(Object target, List<Object> list) {
         if (list == null) {
             return (false);
         }
@@ -1717,29 +1717,29 @@ public class Lockette extends PluginCore {
         return (false);
     }
 
-    private static boolean isHackFormat(String line) {
+    private boolean isHackFormat(String line) {
         String[] strs = line.split(":");
         return (line.indexOf(":") > 1 && strs[1].length() == 36) ? true : false;
     }
 
-    private static String trim(String str) {
+    private String trim(String str) {
         return str == null ? null : str.trim();
     }
 
     // extract palyer name from the playerID string
-    static private String getPlayerName(String str) {
+    private String getPlayerName(String str) {
         return trim(((str.indexOf(":") > 0) ? str.split(":")[0] : str));
     }
 
-    static private String getPlayerUUIDString(String str) {
+    private String getPlayerUUIDString(String str) {
         return trim(((str.indexOf(":") > 0) ? str.split(":")[1] : str));
     }
 
-    static private UUID getPlayerUUID(String str) {
+    private UUID getPlayerUUID(String str) {
         return UUID.fromString(getPlayerUUIDString(str));
     }
 
-    static void setLine(Sign sign, int index, String typed) {
+    void setLine(Sign sign, int index, String typed) {
         // check whether we should continue with uuid support or not.
         OfflinePlayer player = null;
         if (!typed.isEmpty() && typed.indexOf("[") != 0) {
@@ -1751,7 +1751,7 @@ public class Lockette extends PluginCore {
         setLine(sign, index, typed, player);
     }
 
-    static void setLine(Sign sign, int index, String typed, OfflinePlayer player) {
+    void setLine(Sign sign, int index, String typed, OfflinePlayer player) {
         // set whatever typed on the sign anyway.
         String cline = typed.replaceAll("&([0-9A-Fa-f])", "\u00A7$1");
         sign.setLine(index, cline);
@@ -1767,14 +1767,14 @@ public class Lockette extends PluginCore {
             uuids = (UUID[]) list.get(0).value();
         }
         uuids[index - 1] = (player != null) ? player.getUniqueId() : null;
-        if (Lockette.DEBUG) {
-            Lockette.log.info("[Lockette] setting the line " + index + " to " + cline);
-            Lockette.log.info("[Lockette] corresponding player is " + player);
-            Lockette.log.info("[Lockette] uuid has been attached: " + uuids[index - 1]);
+        if (DEBUG) {
+            plugin.log.info("[Lockette] setting the line " + index + " to " + cline);
+            plugin.log.info("[Lockette] corresponding player is " + player);
+            plugin.log.info("[Lockette] uuid has been attached: " + uuids[index - 1]);
         }
     }
 
-    private static UUID getUUIDFromMeta(Sign sign, int index) {
+    private UUID getUUIDFromMeta(Sign sign, int index) {
         if (sign.hasMetadata(META_KEY)) {
             List<MetadataValue> list = sign.getMetadata(META_KEY);
             // should be only one MetadataValue	
@@ -1783,13 +1783,13 @@ public class Lockette extends PluginCore {
         return null;
     }
 
-    static void removeUUIDMetadata(Sign sign) {
+    void removeUUIDMetadata(Sign sign) {
         if (sign.hasMetadata(META_KEY)) {
             sign.removeMetadata(META_KEY, plugin);
         }
     }
 
-    static private boolean oldFormatCheck(String signname, String pname) {
+    private boolean oldFormatCheck(String signname, String pname) {
         signname = ChatColor.stripColor(signname);
         pname = ChatColor.stripColor(pname);
         int length = pname.length();
@@ -1799,7 +1799,7 @@ public class Lockette extends PluginCore {
         return signname.equalsIgnoreCase(pname.substring(0, length));
     }
 
-    static private boolean matchUserUUID(Sign sign, int index, OfflinePlayer player, boolean update) {
+    private boolean matchUserUUID(Sign sign, int index, OfflinePlayer player, boolean update) {
         try {
             String line = sign.getLine(index);
             String checkline = ChatColor.stripColor(line);
@@ -1811,8 +1811,8 @@ public class Lockette extends PluginCore {
 
             // no uuid support? then just compare name against typed
             if (!uuidSupport) {	// 
-                if (Lockette.DEBUG) {
-                    Lockette.log.info("[Lockette] NO UUID support, doing old name checking.");
+                if (DEBUG) {
+                    plugin.log.info("[Lockette] NO UUID support, doing old name checking.");
                 }
                 //return checkline.split(":")[0].trim().equals(player.getName());
                 String pname = player.getName();
@@ -1822,8 +1822,8 @@ public class Lockette extends PluginCore {
 
             UUID uuid = null;
             String name = getPlayerName(line);
-            if (Lockette.DEBUG) {
-                Lockette.log.info("[Lockette] Name on the sign is : " + name);
+            if (DEBUG) {
+                plugin.log.info("[Lockette] Name on the sign is : " + name);
             }
 
             if (isHackFormat(line)) {
@@ -1837,8 +1837,8 @@ public class Lockette extends PluginCore {
                 }
                 if (uuid != null && update) {
                     OfflinePlayer p = Bukkit.getOfflinePlayer(uuid);
-                    if (Lockette.DEBUG) {
-                        Lockette.log.info("[Lockette] updating the old hacked format for " + p);
+                    if (DEBUG) {
+                        plugin.log.info("[Lockette] updating the old hacked format for " + p);
                     }
                     setLine(sign, index, name, p);
                 }
@@ -1849,12 +1849,12 @@ public class Lockette extends PluginCore {
             // not old hack UUID format and just player name?
             // then convert the existing name to uuid then compare uuid
             if (!sign.hasMetadata(META_KEY) || getUUIDFromMeta(sign, index) == null) {
-                if (Lockette.DEBUG) {
+                if (DEBUG) {
                     log.info("[Lockette] Checking for original format for " + checkline);
                 }
                 OfflinePlayer oplayer = Bukkit.getOfflinePlayer(checkline);
                 if (oplayer != null && oplayer.hasPlayedBefore()) {
-                    if (Lockette.DEBUG) {
+                    if (DEBUG) {
                         log.info("[Lockette] converting original format for " + oplayer + " name = " + checkline);
                     }
                     setLine(sign, index, line, oplayer);
@@ -1863,8 +1863,8 @@ public class Lockette extends PluginCore {
                     String pname = player.getName();
                     String against = checkline.split(":")[0].trim();
                     if (oldFormatCheck(against, pname)) {
-                        if (Lockette.DEBUG) {
-                            Lockette.log.info("[Lockette] Partial match! Converting original format for " + player.getName() + " name = " + checkline);
+                        if (DEBUG) {
+                            plugin.log.info("[Lockette] Partial match! Converting original format for " + player.getName() + " name = " + checkline);
                         }
                         setLine(sign, index, player.getName(), player);
                     }
@@ -1885,7 +1885,7 @@ public class Lockette extends PluginCore {
 
             uuid = getUUIDFromMeta(sign, index);
 
-            if (Lockette.DEBUG) {
+            if (DEBUG) {
                 log.info("[Lockette] uuid on the sign = " + uuid);
                 log.info("[Lockette] player's uuid    = " + player.getUniqueId());
             }
@@ -1903,7 +1903,7 @@ public class Lockette extends PluginCore {
                 // this to remove falsely generated uuid.
                 OfflinePlayer oplayer = Bukkit.getOfflinePlayer(uuid);
                 if (!oplayer.hasPlayedBefore()) {
-                    if (Lockette.DEBUG) {
+                    if (DEBUG) {
                         log.info("[Lockette] removing bad UUID");
                     }
                     removeUUIDMetadata(sign);
@@ -1912,7 +1912,7 @@ public class Lockette extends PluginCore {
                 List<String> names = getPreviousNames(player.getUniqueId());
                 for (String n : names) {
                     if (n.equalsIgnoreCase(name)) { // match!
-                        if (Lockette.DEBUG) {
+                        if (DEBUG) {
                             log.info("[Lockette] Found the match in the name history!");
                         }
 
@@ -1930,20 +1930,20 @@ public class Lockette extends PluginCore {
     }
 
     // need to put this back in because others might be using it.
-    public static boolean isOwner(Block block, String name) {
+    public boolean isOwner(Block block, String name) {
         return isOwner(block, Bukkit.getOfflinePlayer(name));
     }
 
-    public static boolean isUser(Block block, String name, boolean withGroups) {
+    public boolean isUser(Block block, String name, boolean withGroups) {
         return isUser(block, Bukkit.getOfflinePlayer(name), withGroups);
     }
 
-    public static boolean isOwner(Block block, OfflinePlayer player) {
+    public boolean isOwner(Block block, OfflinePlayer player) {
         if (!enabled) {
             return true;
         }
 
-        Block checkBlock = Lockette.findBlockOwner(block);
+        Block checkBlock = findBlockOwner(block);
         if (checkBlock == null) {
             return true;
         }
@@ -1954,17 +1954,17 @@ public class Lockette extends PluginCore {
         return matchUserUUID(sign, 1, player, true);
     }
 
-    public static boolean isOwner(Sign sign, OfflinePlayer player) {
+    public boolean isOwner(Sign sign, OfflinePlayer player) {
         // Check owner only.
         return matchUserUUID(sign, 1, player, true);
     }
 
-    public static boolean isUser(Block block, OfflinePlayer player, boolean withGroups) {
+    public boolean isUser(Block block, OfflinePlayer player, boolean withGroups) {
         if (!enabled) {
             return true;
         }
 
-        Block signBlock = Lockette.findBlockOwner(block);
+        Block signBlock = findBlockOwner(block);
 
         if (signBlock == null) {
             return true;
@@ -1988,7 +1988,7 @@ public class Lockette extends PluginCore {
         }
 
         // Check for more users.
-        List<Block> list = Lockette.findBlockUsers(block, signBlock);
+        List<Block> list = findBlockUsers(block, signBlock);
         for (Block blk : list) {
             sign = (Sign) blk.getState();
 
@@ -2011,10 +2011,10 @@ public class Lockette extends PluginCore {
         return false;
     }
 
-    private static final String NAME_HISTORY_URL = "https://api.mojang.com/user/profiles/";
-    private static final JSONParser jsonParser = new JSONParser();
+    private final String NAME_HISTORY_URL = "https://api.mojang.com/user/profiles/";
+    private final JSONParser jsonParser = new JSONParser();
 
-    private static List<String> getPreviousNames(UUID uuid) {
+    private List<String> getPreviousNames(UUID uuid) {
         String name = null;
         List<String> list = new ArrayList<>();
 

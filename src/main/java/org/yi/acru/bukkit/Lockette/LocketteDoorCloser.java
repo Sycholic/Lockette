@@ -16,8 +16,8 @@ import org.bukkit.block.Block;
 
 public class LocketteDoorCloser implements Runnable {
 
-    private static Lockette plugin;
-    private static int doorTask = -1;
+    private Lockette plugin;
+    private int doorTask = -1;
     private final PriorityQueue<closeTask> closeTaskList = new PriorityQueue<closeTask>();
 
     public LocketteDoorCloser(Lockette instance) {
@@ -85,7 +85,7 @@ public class LocketteDoorCloser implements Runnable {
 
     private void close(closeTask door) {
         //Lockette.log.info("Closing at " + door.time);
-        Lockette.toggleHalfDoor(door.world.getBlockAt(door.x, door.y, door.z), door.effect);
+        plugin.toggleHalfDoor(door.world.getBlockAt(door.x, door.y, door.z), door.effect);
     }
 
     // Assumes all blocks in the list are for the same world.

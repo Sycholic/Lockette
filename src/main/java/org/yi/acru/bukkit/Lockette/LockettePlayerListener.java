@@ -67,12 +67,12 @@ public class LockettePlayerListener implements Listener {
 
                 plugin.loadProperties(true);
 
-                plugin.localizedMessage(player, Lockette.broadcastReloadTarget, "msg-admin-reload");
+                plugin.localizedMessage(player, plugin.broadcastReloadTarget, "msg-admin-reload");
                 return;
             }
 
             if (command[1].equalsIgnoreCase("version")) {
-                player.sendMessage(ChatColor.RED + "Lockette version " + plugin.getDescription().getVersion() + " loaded.  (Core: " + Lockette.getCoreVersion() + ")");
+                player.sendMessage(ChatColor.RED + "Lockette version " + plugin.getDescription().getVersion() + " loaded.  (Core: " + plugin.getCoreVersion() + ")");
                 return;
             }
 
@@ -84,8 +84,8 @@ public class LockettePlayerListener implements Listener {
             }
         } else if (command.length == 3) {
             if (command[1].equalsIgnoreCase("debug")) {
-                Lockette.DEBUG = Boolean.parseBoolean(command[2]);
-                player.sendMessage(ChatColor.RED + "[Lockette] DEBUG mode is set to " + Lockette.DEBUG);
+                plugin.DEBUG = Boolean.parseBoolean(command[2]);
+                player.sendMessage(ChatColor.RED + "[Lockette] DEBUG mode is set to " + plugin.DEBUG);
                 return;
             }
         }
@@ -111,18 +111,18 @@ public class LockettePlayerListener implements Listener {
                 boolean privateSign;
 
                 // Check if it is our sign that is selected.
-                if (text.equals("[private]") || text.equalsIgnoreCase(Lockette.altPrivate)) {
+                if (text.equals("[private]") || text.equalsIgnoreCase(plugin.altPrivate)) {
                     privateSign = true;
-                } else if (text.equals("[more users]") || text.equalsIgnoreCase(Lockette.altMoreUsers)) {
+                } else if (text.equals("[more users]") || text.equalsIgnoreCase(plugin.altMoreUsers)) {
                     privateSign = false;
 
-                    Block checkBlock = Lockette.getSignAttachedBlock(block);
+                    Block checkBlock = plugin.getSignAttachedBlock(block);
                     if (checkBlock == null) {
                         plugin.localizedMessage(player, null, "msg-error-edit");
                         return;
                     }
 
-                    Block signBlock = Lockette.findBlockOwner(checkBlock);
+                    Block signBlock = plugin.findBlockOwner(checkBlock);
                     if (signBlock == null) {
                         plugin.localizedMessage(player, null, "msg-error-edit");
                         return;
@@ -134,11 +134,11 @@ public class LockettePlayerListener implements Listener {
                     return;
                 }
 
-                if (Lockette.isOwner(owner, player) || Lockette.debugMode) {
+                if (plugin.isOwner(owner, player) || plugin.debugMode) {
                     int line = Integer.parseInt(command[1]) - 1;
 
                     // Disallow editing [Private] line 1 here.
-                    if (!Lockette.debugMode) {
+                    if (!plugin.debugMode) {
                         if (line <= 0) {
                             return;
                         }
@@ -153,17 +153,17 @@ public class LockettePlayerListener implements Listener {
                     }
 
                     if (command.length == 3) {
-                        String id = (!Lockette.colorTags) ? command[2].replaceAll("&([0-9A-Fa-f])", "") : command[2];
+                        String id = (!plugin.colorTags) ? command[2].replaceAll("&([0-9A-Fa-f])", "") : command[2];
                         // the owner is allowed to change the 1st line
-                        if (Lockette.DEBUG) {
-                            Lockette.log.info("[Lockette] striped name = " + command[2].replaceAll("&([0-9A-Fa-f])", ""));
-                            Lockette.log.info("[Lockette] player name = " + player.getName());
+                        if (plugin.DEBUG) {
+                            plugin.log.info("[Lockette] striped name = " + command[2].replaceAll("&([0-9A-Fa-f])", ""));
+                            plugin.log.info("[Lockette] player name = " + player.getName());
                         }
                         //sign.setLine(line, id);
-                        Lockette.setLine(sign, line, id);
+                        plugin.setLine(sign, line, id);
                     } else //sign.setLine(line, "");
                     {
-                        Lockette.setLine(sign, line, "");
+                        plugin.setLine(sign, line, "");
                     }
                     sign.update();
 
@@ -209,7 +209,7 @@ public class LockettePlayerListener implements Listener {
         if (action == Action.RIGHT_CLICK_BLOCK) {
 
             // Check we are allowed to used this trapdoor
-            if ((Lockette.protectTrapDoors) && (BlockUtil.isInList(type, BlockUtil.materialListTrapDoors))) {
+            if ((plugin.protectTrapDoors) && (BlockUtil.isInList(type, BlockUtil.materialListTrapDoors))) {
 
                 if (interactDoor(block, player)) {
                     return;
@@ -221,7 +221,7 @@ public class LockettePlayerListener implements Listener {
             }
 
             // Check we are allowed to used this door
-            if ((Lockette.protectDoors) && (BlockUtil.isInList(type, BlockUtil.materialListDoors))) {
+            if ((plugin.protectDoors) && (BlockUtil.isInList(type, BlockUtil.materialListDoors))) {
                 if (interactDoor(block, player)) {
                     return;
                 }
@@ -238,14 +238,14 @@ public class LockettePlayerListener implements Listener {
 
             if (BlockUtil.isInList(type, BlockUtil.materialListChests)) {
                 // Try at making a 1.7->1.8 chest fixer.
-                Lockette.rotateChestOrientation(block, face);
+                plugin.rotateChestOrientation(block, face);
             }
 
             if (BlockUtil.isInList(type, BlockUtil.materialListNonDoors)
-                    || Lockette.isInList(type, Lockette.customBlockList)) {
+                    || plugin.isInList(type, plugin.customBlockList)) {
 
                 // Trying something out....
-                if (Lockette.directPlacement) {
+                if (plugin.directPlacement) {
                     if (event.hasItem()) {
                         if ((face != BlockFace.UP) && (face != BlockFace.DOWN)) {
                             item = event.getItem();
@@ -258,9 +258,9 @@ public class LockettePlayerListener implements Listener {
                                 if (type == Material.AIR.getId()) {
                                     boolean place = false;
 
-                                    if (Lockette.isProtected(block)) {
+                                    if (plugin.isProtected(block)) {
                                         // Add a users sign only if owner.
-                                        if (Lockette.isOwner(block, player)) {
+                                        if (plugin.isOwner(block, player)) {
                                             place = true;
                                         }
                                     } else {
@@ -315,7 +315,7 @@ public class LockettePlayerListener implements Listener {
             }
 
         } else if (action == Action.LEFT_CLICK_BLOCK) {
-            if (Lockette.protectTrapDoors) {
+            if (plugin.protectTrapDoors) {
                 if (BlockUtil.isInList(type, BlockUtil.materialListTrapDoors)) {
                     if (interactDoor(block, player)) {
                         return;
@@ -327,7 +327,7 @@ public class LockettePlayerListener implements Listener {
                 }
             }
 
-            if (Lockette.protectDoors) {
+            if (plugin.protectDoors) {
                 if (BlockUtil.isInList(type, BlockUtil.materialListDoors)) {
                     if (interactDoor(block, player)) {
                         return;
@@ -353,7 +353,7 @@ public class LockettePlayerListener implements Listener {
     // Start of interact section
     // Returns true if it should be allowed, false if it should be canceled.
     private static boolean interactDoor(Block block, Player player) {
-        Block signBlock = Lockette.findBlockOwner(block);
+        Block signBlock = plugin.findBlockOwner(block);
 
         if (signBlock == null) {
             return (true);
@@ -362,7 +362,7 @@ public class LockettePlayerListener implements Listener {
         boolean wooden = BlockUtil.isInList(block.getTypeId(), BlockUtil.materialListWoodenDoors);
         boolean trap = false;
 
-        if (Lockette.protectTrapDoors) {
+        if (plugin.protectTrapDoors) {
             if (BlockUtil.isInList(block.getTypeId(), BlockUtil.materialListTrapDoors)) {
                 trap = true;
             }
@@ -408,9 +408,9 @@ public class LockettePlayerListener implements Listener {
          }
          */
         if (allow) {
-            List<Block> list = Lockette.toggleDoors(block, Lockette.getSignAttachedBlock(signBlock), wooden, trap);
+            List<Block> list = plugin.toggleDoors(block, plugin.getSignAttachedBlock(signBlock), wooden, trap);
 
-            int delta = Lockette.getSignOption(signBlock, "timer", Lockette.altTimer, Lockette.defaultDoorTimer);
+            int delta = plugin.getSignOption(signBlock, "timer", plugin.altTimer, plugin.defaultDoorTimer);
 
             plugin.doorCloser.add(list, delta != 0, delta);
             return (true);
@@ -435,14 +435,14 @@ public class LockettePlayerListener implements Listener {
         String text = sign.getLine(0).replaceAll("(?i)\u00A7[0-F]", "").toLowerCase();
 
         // Check if it is our sign that was clicked.
-        if (text.equals("[private]") || text.equalsIgnoreCase(Lockette.altPrivate)) {
-        } else if (text.equals("[more users]") || text.equalsIgnoreCase(Lockette.altMoreUsers)) {
-            Block checkBlock = Lockette.getSignAttachedBlock(block);
+        if (text.equals("[private]") || text.equalsIgnoreCase(plugin.altPrivate)) {
+        } else if (text.equals("[more users]") || text.equalsIgnoreCase(plugin.altMoreUsers)) {
+            Block checkBlock = plugin.getSignAttachedBlock(block);
             if (checkBlock == null) {
                 return;
             }
 
-            Block signBlock = Lockette.findBlockOwner(checkBlock);
+            Block signBlock = plugin.findBlockOwner(checkBlock);
             if (signBlock == null) {
                 return;
             }
@@ -454,7 +454,7 @@ public class LockettePlayerListener implements Listener {
 
         // Check owner.
         //if(sign.getLine(1).replaceAll("(?i)\u00A7[0-F]", "").equals(player.getName()) || Lockette.debugMode){			
-        if (Lockette.isOwner(sign, player) || Lockette.debugMode) {
+        if (plugin.isOwner(sign, player) || plugin.debugMode) {
             if (!block.equals(plugin.playerList.get(player.getName()))) {
                 // Associate the user with the owned sign.
                 plugin.playerList.put(player.getName(), block);
@@ -483,7 +483,7 @@ public class LockettePlayerListener implements Listener {
 
     // Returns true if it should be allowed, false if it should be canceled.
     private static boolean interactContainer(Block block, Player player) {
-        Block signBlock = Lockette.findBlockOwner(block);
+        Block signBlock = plugin.findBlockOwner(block);
 
         if (signBlock == null) {
             return (true);
@@ -515,7 +515,7 @@ public class LockettePlayerListener implements Listener {
         String line;
 
         // Check owner and other users
-        if (Lockette.isUser(block, player, true)) {
+        if (plugin.isUser(block, player, true)) {
             return true;
         }
 
@@ -523,27 +523,27 @@ public class LockettePlayerListener implements Listener {
         boolean snoop = false;
 
         if (isDoor) {
-            if (Lockette.adminBypass) {
+            if (plugin.adminBypass) {
                 if (plugin.hasPermission(block.getWorld(), player, "lockette.admin.bypass")) {
                     snoop = true;
                 }
 
                 if (snoop) {
-                    Lockette.log.info("[" + plugin.getDescription().getName() + "] (Admin) " + player.getName() + " has bypassed a door owned by " + sign.getLine(1));
+                    plugin.log.info("[" + plugin.getDescription().getName() + "] (Admin) " + player.getName() + " has bypassed a door owned by " + sign.getLine(1));
 
                     plugin.localizedMessage(player, null, "msg-admin-bypass", sign.getLine(1));
                     return (true);
                 }
             }
-        } else if (Lockette.adminSnoop) {
+        } else if (plugin.adminSnoop) {
             if (plugin.hasPermission(block.getWorld(), player, "lockette.admin.snoop")) {
                 snoop = true;
             }
 
             if (snoop) {
-                Lockette.log.info("[" + plugin.getDescription().getName() + "] (Admin) " + player.getName() + " has snooped around in a container owned by " + sign.getLine(1) + "!");
+                plugin.log.info("[" + plugin.getDescription().getName() + "] (Admin) " + player.getName() + " has snooped around in a container owned by " + sign.getLine(1) + "!");
 
-                plugin.localizedMessage(player, Lockette.broadcastSnoopTarget, "msg-admin-snoop", sign.getLine(1));
+                plugin.localizedMessage(player, plugin.broadcastSnoopTarget, "msg-admin-snoop", sign.getLine(1));
                 return (true);
             }
         }
@@ -561,13 +561,13 @@ public class LockettePlayerListener implements Listener {
         boolean doCheck = false;
 
         // Check if the block being looked at is a door block.
-        if (Lockette.protectTrapDoors) {
+        if (plugin.protectTrapDoors) {
             if (BlockUtil.isInList(type, BlockUtil.materialListTrapDoors)) {
                 doCheck = true;
             }
         }
 
-        if (Lockette.protectDoors) {
+        if (plugin.protectDoors) {
             if (BlockUtil.isInList(type, BlockUtil.materialListDoors)) {
                 doCheck = true;
             }
@@ -577,7 +577,7 @@ public class LockettePlayerListener implements Listener {
             return (true);
         }
 
-        Block signBlock = Lockette.findBlockOwner(block);
+        Block signBlock = plugin.findBlockOwner(block);
 
         if (signBlock == null) {
             return (true);
@@ -586,8 +586,8 @@ public class LockettePlayerListener implements Listener {
         Sign sign = (Sign) signBlock.getState();
 
         // Check owner only.
-        if (Lockette.isOwner(block, player)) {
-            Lockette.toggleSingleDoor(block);
+        if (plugin.isOwner(block, player)) {
+            plugin.toggleSingleDoor(block);
             return (false);
         }
 

@@ -22,7 +22,7 @@ import org.yi.acru.bukkit.BlockUtil;
 
 public class LocketteWorldListener implements Listener {
 
-    private static Lockette plugin;
+    private Lockette plugin;
 
     public LocketteWorldListener(Lockette instance) {
         plugin = instance;
@@ -65,12 +65,12 @@ public class LocketteWorldListener implements Listener {
         for (x = 0; x < count; ++x) {
             block = blockList.get(x).getBlock();
 
-            if (Lockette.isProtected(block)) {
+            if (plugin.isProtected(block)) {
                 event.setCancelled(true);
                 return;
             }
 
-            if (Lockette.explosionProtectionAll) {
+            if (plugin.explosionProtectionAll) {
                 if (BlockUtil.isInList(block.getTypeId(), BlockUtil.materialListNonDoors)) {
                     event.setCancelled(true);
                     return;
