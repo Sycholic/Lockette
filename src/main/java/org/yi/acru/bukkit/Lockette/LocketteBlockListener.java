@@ -10,14 +10,8 @@ import java.util.List;
 
 import org.bukkit.block.Block;
 import org.bukkit.block.BlockFace;
-import org.bukkit.block.BlockState;
-import org.bukkit.block.Chest;
-import org.bukkit.block.DoubleChest;
-import org.bukkit.block.Hopper;
 import org.bukkit.block.Sign;
 import org.bukkit.ChatColor;
-import org.bukkit.entity.minecart.HopperMinecart;
-import org.bukkit.entity.minecart.StorageMinecart;
 import org.bukkit.entity.Player;
 import org.bukkit.event.block.BlockBreakEvent;
 import org.bukkit.event.block.BlockPistonExtendEvent;
@@ -25,7 +19,6 @@ import org.bukkit.event.block.BlockPistonRetractEvent;
 import org.bukkit.event.block.BlockPlaceEvent;
 import org.bukkit.event.block.BlockRedstoneEvent;
 import org.bukkit.event.block.SignChangeEvent;
-import org.bukkit.event.inventory.InventoryMoveItemEvent;
 import org.bukkit.Material;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.EventPriority;
@@ -37,7 +30,7 @@ import org.yi.acru.bukkit.BlockUtil;
 
 public class LocketteBlockListener implements Listener {
 
-    private Lockette plugin;
+    private final Lockette plugin;
 
     public LocketteBlockListener(Lockette instance) {
         plugin = instance;

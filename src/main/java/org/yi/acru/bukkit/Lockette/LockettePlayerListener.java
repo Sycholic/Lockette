@@ -65,7 +65,7 @@ public class LockettePlayerListener implements Listener {
                     return;
                 }
 
-                plugin.loadProperties(true);
+                plugin.getLocketteProperties().loadProperties(true);
 
                 plugin.localizedMessage(player, plugin.broadcastReloadTarget, "msg-admin-reload");
                 return;

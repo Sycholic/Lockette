@@ -38,6 +38,7 @@ import org.bukkit.metadata.*;
 import java.io.*;
 import java.net.*;
 import java.util.*;
+import org.apache.commons.lang.mutable.MutableBoolean;
 import org.json.simple.*;
 import org.json.simple.parser.*;
 
@@ -48,7 +49,7 @@ public class Lockette extends PluginCore {
     private Lockette plugin;
     private boolean enabled = false;
 
-    private boolean uuidSupport = false;
+    private MutableBoolean uuidSupport = new MutableBoolean(false);
     private boolean registered = false;
     private final LocketteBlockListener blockListener = new LocketteBlockListener(this);
     private final LocketteEntityListener entityListener = new LocketteEntityListener(this);
@@ -74,7 +75,7 @@ public class Lockette extends PluginCore {
     protected final HashMap<String, Block> playerList = new HashMap<String, Block>();
 
     private final String META_KEY = "LocketteUUIDs";
-
+    private LocketteProperties properties;
     public Lockette() {
         plugin = this;
     }
@@ -135,7 +136,8 @@ public class Lockette extends PluginCore {
         }
 
         // Load properties and strings.
-        loadProperties(false);
+        properties = new LocketteProperties(plugin);
+        properties.loadProperties(false);
 
         // Load external permission/group plugins.
         super.onEnable();
@@ -183,7 +185,7 @@ public class Lockette extends PluginCore {
         }
         if (args.length == 1) {
             if (args[0].equalsIgnoreCase("reload")) {
-                loadProperties(true);
+                properties.loadProperties(true);
 
                 localizedMessage(null, broadcastReloadTarget, "msg-admin-reload");
 
@@ -196,461 +198,6 @@ public class Lockette extends PluginCore {
         //sender.sendMessage("Lockette: Test");
 
         return (true);
-    }
-
-    //@SuppressWarnings("unchecked") Not needed anymore i guess.
-    protected void loadProperties(boolean reload) {
-        if (reload) {
-            log.info("[" + getDescription().getName() + "] Reloading plugin configuration files.");
-            this.reloadConfig();
-        }
-
-        FileConfiguration properties = this.getConfig();
-        boolean propChanged = true;
-        //boolean			tempBoolean;
-
-        uuidSupport = properties.getBoolean("enable-uuid-support", false);
-        properties.set("enable-uuid-support", uuidSupport);
-        msgUser = properties.getBoolean("enable-messages-user", true);
-        properties.set("enable-messages-user", msgUser);
-        msgOwner = properties.getBoolean("enable-messages-owner", false);
-        properties.set("enable-messages-owner", msgOwner);
-        //msgAdmin = true;
-        msgAdmin = properties.getBoolean("enable-messages-admin", true);
-        properties.set("enable-messages-admin", msgAdmin);
-        msgError = properties.getBoolean("enable-messages-error", true);
-        properties.set("enable-messages-error", msgError);
-        msgHelp = properties.getBoolean("enable-messages-help", true);
-        properties.set("enable-messages-help", msgHelp);
-
-        explosionProtectionAll = properties.getBoolean("explosion-protection-all", true);
-        properties.set("explosion-protection-all", explosionProtectionAll);
-        rotateChests = properties.getBoolean("enable-chest-rotation", false);
-        properties.set("enable-chest-rotation", rotateChests);
-
-        usePermissions = properties.getBoolean("enable-permissions", false);
-        properties.set("enable-permissions", usePermissions);
-        protectDoors = properties.getBoolean("enable-protection-doors", true);
-        properties.set("enable-protection-doors", protectDoors);
-        protectTrapDoors = properties.getBoolean("enable-protection-trapdoors", true);
-        properties.set("enable-protection-trapdoors", protectTrapDoors);
-
-        adminSnoop = properties.getBoolean("allow-admin-snoop", false);
-        properties.set("allow-admin-snoop", adminSnoop);
-        adminBypass = properties.getBoolean("allow-admin-bypass", true);
-        properties.set("allow-admin-bypass", adminBypass);
-        adminBreak = properties.getBoolean("allow-admin-break", true);
-        properties.set("allow-admin-break", adminBreak);
-
-        blockHopper = properties.getBoolean("enable-hopper-blocking", true);
-        properties.set("enable-hopper-blocking", blockHopper);
-
-        // Start a scheduled task, for closing doors.
-        if (protectDoors || protectTrapDoors) {
-            if (doorCloser.start()) {
-                log.severe("[" + getDescription().getName() + "] Failed to register door closing task!");
-            }
-        } else {
-            doorCloser.stop();
-        }
-
-        directPlacement = properties.getBoolean("enable-quick-protect", true);
-        properties.set("enable-quick-protect", directPlacement);
-        colorTags = properties.getBoolean("enable-color-tags", true);
-        properties.set("enable-color-tags", colorTags);
-
-        // Don't write this option back out if it doesn't exist, and write a warning if it is enabled.
-        debugMode = properties.getBoolean("enable-debug", false);
-        if (debugMode) {
-            log.warning("[" + getDescription().getName() + "] Debug mode is enabled, so Lockette chests are NOT secure.");
-        }
-
-        //directPlacement = true;
-        // = properties.getBoolean("", true);
-        //properties.set("", );
-        //tempBoolean = properties.getBoolean("use-whitelist", false);
-        //tempBoolean = properties.getBoolean("lock-all-chests", true);//rename
-        //tempBoolean = properties.getBoolean("test-bool", true);
-        //properties.set("test-bool", tempBoolean);
-        defaultDoorTimer = properties.getInt("default-door-timer", -1);
-        if (defaultDoorTimer == -1) {
-            defaultDoorTimer = 0;
-            properties.set("default-door-timer", defaultDoorTimer);
-            propChanged = true;
-        }
-
-        // Customizable protected block list.
-        customBlockList = (List<Object>) properties.getList("custom-lockable-block-list");
-        if (customBlockList == null) {
-            customBlockList = new ArrayList<Object>(3);
-            customBlockList.add(Material.ENCHANTMENT_TABLE.getId());
-            customBlockList.add(Material.JUKEBOX.getId());
-            customBlockList.add(Material.DIAMOND_BLOCK.getId());
-            customBlockList.add(Material.ANVIL.getId());
-            customBlockList.add(Material.HOPPER.getId());
-            properties.set("custom-lockable-block-list", customBlockList);
-            propChanged = true;
-        }
-        if (!customBlockList.isEmpty()) {
-            log.info("[" + getDescription().getName() + "] Custom lockable block list: " + customBlockList.toString());
-        }
-
-        // Customizable disabled plugin link list.
-        disabledPluginList = (List<Object>) properties.getList("linked-plugin-ignore-list");
-        if (disabledPluginList == null) {
-            disabledPluginList = new ArrayList<Object>(1);
-            disabledPluginList.add("mcMMO");
-            properties.set("linked-plugin-ignore-list", disabledPluginList);
-            propChanged = true;
-        }
-        if (!disabledPluginList.isEmpty()) {
-            log.info("[" + getDescription().getName() + "] Ignoring linked plugins: " + disabledPluginList.toString());
-        }
-
-        broadcastSnoopTarget = properties.getString("broadcast-snoop-target");
-        if (broadcastSnoopTarget == null) {
-            broadcastSnoopTarget = "[Everyone]";
-            properties.set("broadcast-snoop-target", broadcastSnoopTarget);
-            propChanged = true;
-        }
-        broadcastBreakTarget = properties.getString("broadcast-break-target");
-        if (broadcastBreakTarget == null) {
-            broadcastBreakTarget = "[Everyone]";
-            properties.set("broadcast-break-target", broadcastBreakTarget);
-            propChanged = true;
-        }
-        broadcastReloadTarget = properties.getString("broadcast-reload-target");
-        if (broadcastReloadTarget == null) {
-            broadcastReloadTarget = "[Operators]";
-            properties.set("broadcast-reload-target", broadcastReloadTarget);
-            propChanged = true;
-        }
-
-        String stringsFileName = properties.getString("strings-file-name");
-        if ((stringsFileName == null) || stringsFileName.isEmpty()) {
-            stringsFileName = "strings-en.yml";
-            properties.set("strings-file-name", stringsFileName);
-            propChanged = true;
-        }
-
-        if (propChanged) {
-            this.saveConfig();
-        }
-        loadStrings(reload, stringsFileName);
-    }
-
-    protected void loadStrings(boolean reload, String fileName) {
-        boolean stringChanged = false;
-        String tempString;
-        File stringsFile = new File(getDataFolder(), fileName);
-
-        // Close the strings file if already loaded.
-        if (strings != null) {
-            // Should automatically garbage collect.
-            strings = null;
-        }
-
-        // Load the strings file.
-        strings = new YamlConfiguration();
-        try {
-            strings.load(stringsFile);
-        } catch (InvalidConfigurationException ex) {
-            log.warning("[" + getDescription().getName() + "] Error loading " + fileName + ": " + ex.getMessage());
-
-            if (!fileName.equals("strings-en.yml")) {
-                loadStrings(reload, "strings-en.yml");
-                return;
-            } else {
-                log.warning("[" + getDescription().getName() + "] Returning to default strings.");
-            }
-        } catch (IOException ex) {
-        }
-
-        // To remove French tags from the default strings file, and to not save to alternate strings files.
-        boolean original = false;
-        if (fileName.equals("strings-en.yml")) {
-            original = true;
-
-            strings.set("language", "English");
-
-            // Force to be first.
-            if (original) {
-                try {
-                    strings.save(stringsFile);
-                    strings.load(stringsFile);
-                } catch (IOException | InvalidConfigurationException ex) {
-                }
-            }
-
-            strings.set("author", "Acru");
-            strings.set("editors", "");
-            strings.set("version", 0);
-        }
-
-        // Report language.
-        tempString = strings.getString("language");
-        if ((tempString == null) || tempString.isEmpty()) {
-            log.info("[" + getDescription().getName() + "] Loading strings file " + fileName);
-        } else {
-            log.info("[" + getDescription().getName() + "] Loading strings file for " + tempString + " by " + strings.getString("author"));
-        }
-
-        // Load in the alternate sign strings.
-        altPrivate = strings.getString("alternate-private-tag");
-        if ((altPrivate == null) || altPrivate.isEmpty() || (original && altPrivate.equals("Privé"))) {
-            altPrivate = "Private";
-            strings.set("alternate-private-tag", altPrivate);
-        }
-        altPrivate = "[" + altPrivate + "]";
-
-        altMoreUsers = strings.getString("alternate-moreusers-tag");
-        if ((altMoreUsers == null) || altMoreUsers.isEmpty() || (original && altMoreUsers.equals("Autre Noms"))) {
-            altMoreUsers = "More Users";
-            strings.set("alternate-moreusers-tag", altMoreUsers);
-            stringChanged = true;
-        }
-        altMoreUsers = "[" + altMoreUsers + "]";
-
-        altEveryone = strings.getString("alternate-everyone-tag");
-        if ((altEveryone == null) || altEveryone.isEmpty() || (original && altEveryone.equals("Tout le Monde"))) {
-            altEveryone = "Everyone";
-            strings.set("alternate-everyone-tag", altEveryone);
-            stringChanged = true;
-        }
-        altEveryone = "[" + altEveryone + "]";
-
-        altOperators = strings.getString("alternate-operators-tag");
-        if ((altOperators == null) || altOperators.isEmpty() || (original && altOperators.equals("Opérateurs"))) {
-            altOperators = "Operators";
-            strings.set("alternate-operators-tag", altOperators);
-            stringChanged = true;
-        }
-        altOperators = "[" + altOperators + "]";
-
-        altTimer = strings.getString("alternate-timer-tag");
-        if ((altTimer == null) || altTimer.isEmpty() || (original && altTimer.equals("Minuterie"))) {
-            altTimer = "Timer";
-            strings.set("alternate-timer-tag", altTimer);
-            stringChanged = true;
-        }
-
-        altFee = strings.getString("alternate-fee-tag");
-        if ((altFee == null) || altFee.isEmpty()) {
-            altFee = "Fee";
-            strings.set("alternate-fee-tag", altFee);
-            stringChanged = true;
-        }
-
-        // Check all the message strings.
-        // Messages for onBlockPlace.
-        tempString = strings.getString("msg-user-conflict-door");
-        if (tempString == null) {
-            strings.set("msg-user-conflict-door", "Conflicting door removed!");
-            stringChanged = true;
-        }
-        tempString = strings.getString("msg-user-illegal");
-        if (tempString == null) {
-            strings.set("msg-user-illegal", "Illegal chest removed!");
-            stringChanged = true;
-        }
-        tempString = strings.getString("msg-user-resize-owned");
-        if (tempString == null) {
-            strings.set("msg-user-resize-owned", "You cannot resize a chest claimed by ***.");
-            stringChanged = true;
-        }
-        tempString = strings.getString("msg-help-chest");
-        if (tempString == null) {
-            strings.set("msg-help-chest", "Place a sign headed [Private] next to a chest to lock it.");
-            stringChanged = true;
-        }
-
-        // Messages for onBlockBreak.
-        tempString = strings.getString("msg-owner-release");
-        if (tempString == null) {
-            strings.set("msg-owner-release", "You have released a container!");
-            stringChanged = true;
-        }
-        tempString = strings.getString("msg-admin-release");
-        if (tempString == null) {
-            strings.set("msg-admin-release", "(Admin) @@@ has broken open a container owned by ***!");
-            stringChanged = true;
-        }
-        tempString = strings.getString("msg-user-release-owned");
-        if (tempString == null) {
-            strings.set("msg-user-release-owned", "You cannot release a container claimed by ***.");
-            stringChanged = true;
-        }
-        tempString = strings.getString("msg-owner-remove");
-        if (tempString == null) {
-            strings.set("msg-owner-remove", "You have removed users from a container!");
-            stringChanged = true;
-        }
-        tempString = strings.getString("msg-user-remove-owned");
-        if (tempString == null) {
-            strings.set("msg-user-remove-owned", "You cannot remove users from a container claimed by ***.");
-            stringChanged = true;
-        }
-        tempString = strings.getString("msg-user-break-owned");
-        if (tempString == null) {
-            strings.set("msg-user-break-owned", "You cannot break a container claimed by ***.");
-            stringChanged = true;
-        }
-
-        // Messages for onBlockDamage.
-        tempString = strings.getString("msg-user-denied-door");
-        if (tempString == null) {
-            strings.set("msg-user-denied-door", "You don't have permission to use this door.");
-            stringChanged = true;
-        }
-
-        // Messages for onBlockRightClick.
-        tempString = strings.getString("msg-user-touch-fee");
-        if (tempString == null) {
-            strings.set("msg-user-touch-fee", "A fee of ### will be paid to ***, to open.");
-            stringChanged = true;
-        }
-        tempString = strings.getString("msg-user-touch-owned");
-        if (tempString == null) {
-            strings.set("msg-user-touch-owned", "This container has been claimed by ***.");
-            stringChanged = true;
-        }
-        tempString = strings.getString("msg-help-select");
-        if (tempString == null) {
-            strings.set("msg-help-select", "Sign selected, use /lockette <line number> <text> to edit.");
-            stringChanged = true;
-        }
-
-        // Messages for onBlockInteract.
-        tempString = strings.getString("msg-admin-bypass");
-        if (tempString == null) {
-            strings.set("msg-admin-bypass", "Bypassed a door owned by ***, be sure to close it behind you.");
-            stringChanged = true;
-        }
-        tempString = strings.getString("msg-admin-snoop");
-        if (tempString == null) {
-            strings.set("msg-admin-snoop", "(Admin) @@@ has snooped around in a container owned by ***!");
-            stringChanged = true;
-        }
-        tempString = strings.getString("msg-user-denied");
-        if (tempString == null) {
-            strings.set("msg-user-denied", "You don't have permission to open this container.");
-            stringChanged = true;
-        }
-
-        // Messages for onSignChange.
-        tempString = strings.getString("msg-error-zone");
-        if (tempString == null) {
-            strings.set("msg-error-zone", "This zone is protected by ***.");
-            stringChanged = true;
-        }
-        tempString = strings.getString("msg-error-permission");
-        if (tempString == null) {
-            strings.set("msg-error-permission", "Permission to lock container denied.");
-            stringChanged = true;
-        } else if (tempString.equals("Permission to lock containers denied.")) {
-            strings.set("msg-error-permission", "Permission to lock container denied.");
-            stringChanged = true;
-        }
-        tempString = strings.getString("msg-error-claim");
-        if (tempString == null) {
-            strings.set("msg-error-claim", "No unclaimed container nearby to make Private!");
-            stringChanged = true;
-        }
-        tempString = strings.getString("msg-error-claim-conflict");
-        if (tempString == null) {
-            strings.set("msg-error-claim-conflict", "Conflict with an existing protected door.");
-            stringChanged = true;
-        }
-        tempString = strings.getString("msg-admin-claim-error");
-        if (tempString == null) {
-            strings.set("msg-admin-claim-error", "Player *** is not online, be sure you have the correct name.");
-            stringChanged = true;
-        }
-        tempString = strings.getString("msg-admin-claim");
-        if (tempString == null) {
-            strings.set("msg-admin-claim", "You have claimed a container for ***.");
-            stringChanged = true;
-        }
-        tempString = strings.getString("msg-owner-claim");
-        if (tempString == null) {
-            strings.set("msg-owner-claim", "You have claimed a container!");
-            stringChanged = true;
-        }
-        tempString = strings.getString("msg-error-adduser-owned");
-        if (tempString == null) {
-            strings.set("msg-error-adduser-owned", "You cannot add users to a container claimed by ***.");
-            stringChanged = true;
-        }
-        tempString = strings.getString("msg-error-adduser");
-        if (tempString == null) {
-            strings.set("msg-error-adduser", "No claimed container nearby to add users to!");
-            stringChanged = true;
-        }
-        tempString = strings.getString("msg-owner-adduser");
-        if (tempString == null) {
-            strings.set("msg-owner-adduser", "You have added users to a container!");
-            stringChanged = true;
-        }
-
-        // Messages for onPlayerCommand.
-        if (original) {
-            strings.set("msg-help-command1", "&C/lockette <line number> <text> - Edits signs on locked containers. Right click on the sign to edit.");
-            strings.set("msg-help-command2", "&C/lockette fix - Fixes an automatic door that is in the wrong position. Look at the door to edit.");
-            strings.set("msg-help-command3", "&C/lockette reload - Reloads the configuration files. Operators only.");
-            strings.set("msg-help-command4", "&C/lockette version - Reports Lockette version.");
-            stringChanged = true;
-        }
-
-        /*
-         tempString = strings.getString("msg-help-command1");
-         if(tempString == null){
-         strings.set("msg-help-command1", "/lockette reload - Reloads the configuration files.");
-         stringChanged = true;
-         }
-         tempString = strings.getString("msg-help-command2");
-         if(tempString == null){
-         strings.set("msg-help-command2", "/lockette <line number> <text> - Edits signs on locked containers. Right click on the sign to edit.");
-         stringChanged = true;
-         }
-         */
-        tempString = strings.getString("msg-admin-reload");
-        if (tempString == null) {
-            strings.set("msg-admin-reload", "Reloading plugin configuration files.");
-            stringChanged = true;
-        }
-        tempString = strings.getString("msg-error-fix");
-        if (tempString == null) {
-            strings.set("msg-error-fix", "No owned door found.");
-            stringChanged = true;
-        }
-        tempString = strings.getString("msg-error-edit");
-        if (tempString == null) {
-            strings.set("msg-error-edit", "First select a sign by right clicking it.");
-            stringChanged = true;
-        }
-        tempString = strings.getString("msg-owner-edit");
-        if (tempString == null) {
-            strings.set("msg-owner-edit", "Sign edited successfully.");
-            stringChanged = true;
-        }
-
-        /*
-		
-         tempString = strings.getString("");
-         if(tempString == null){
-         strings.set("", "");
-         stringChanged = true;
-         }
-		
-         */
-        if (original) {
-            if (stringChanged) {
-                try {
-                    strings.save(stringsFile);
-                } catch (Exception ex) {
-                }
-            }
-        }
     }
 
     //********************************************************************************************************************
@@ -1810,7 +1357,7 @@ public class Lockette extends PluginCore {
             }
 
             // no uuid support? then just compare name against typed
-            if (!uuidSupport) {	// 
+            if (!uuidSupport.booleanValue()) {	// 
                 if (DEBUG) {
                     plugin.log.info("[Lockette] NO UUID support, doing old name checking.");
                 }
@@ -2033,5 +1580,12 @@ public class Lockette extends PluginCore {
             log.info("[Lockette] Failed to get Name history!");
         }
         return list;
+    }
+    public MutableBoolean getUUIDSupport() {
+        return uuidSupport;
+    }
+    
+    public LocketteProperties getLocketteProperties() {
+        return properties;
     }
 }
