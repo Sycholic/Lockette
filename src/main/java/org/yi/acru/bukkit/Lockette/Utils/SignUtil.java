@@ -10,6 +10,7 @@ import java.util.UUID;
 import org.bukkit.Bukkit;
 import org.bukkit.ChatColor;
 import org.bukkit.OfflinePlayer;
+import org.bukkit.block.Sign;
 import org.bukkit.metadata.FixedMetadataValue;
 import org.bukkit.metadata.MetadataValue;
 import org.yi.acru.bukkit.Lockette.Lockette;
@@ -21,6 +22,7 @@ import org.yi.acru.bukkit.Lockette.Lockette;
 public class SignUtil {
 
     private final Lockette plugin;
+
     public SignUtil(Lockette instance) {
         plugin = instance;
     }
@@ -57,6 +59,21 @@ public class SignUtil {
             plugin.log.info("[Lockette] setting the line " + index + " to " + cline);
             plugin.log.info("[Lockette] corresponding player is " + player);
             plugin.log.info("[Lockette] uuid has been attached: " + uuids[index - 1]);
+        }
+    }
+    
+    public UUID getUUIDFromMeta(Sign sign, int index) {
+        if (sign.hasMetadata(plugin.getMETA_KEY())) {
+            List<MetadataValue> list = sign.getMetadata(plugin.getMETA_KEY());
+            // should be only one MetadataValue	
+            return ((UUID[]) list.get(0).value())[index - 1];
+        }
+        return null;
+    }
+    
+    public void removeUUIDMetadata(Sign sign) {
+        if (sign.hasMetadata(plugin.getMETA_KEY())) {
+            sign.removeMetadata(plugin.getMETA_KEY(), plugin);
         }
     }
 }

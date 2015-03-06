@@ -85,7 +85,7 @@ public class LocketteDoorCloser implements Runnable {
 
     private void close(closeTask door) {
         //Lockette.log.info("Closing at " + door.time);
-        plugin.toggleHalfDoor(door.world.getBlockAt(door.x, door.y, door.z), door.effect);
+        plugin.doorUtils.toggleHalfDoor(door.world.getBlockAt(door.x, door.y, door.z), door.effect);
     }
 
     // Assumes all blocks in the list are for the same world.

@@ -408,7 +408,7 @@ public class LockettePlayerListener implements Listener {
          }
          */
         if (allow) {
-            List<Block> list = plugin.toggleDoors(block, plugin.getSignAttachedBlock(signBlock), wooden, trap);
+            List<Block> list = plugin.doorUtils.toggleDoors(block, plugin.getSignAttachedBlock(signBlock), wooden, trap);
 
             int delta = plugin.getSignOption(signBlock, "timer", plugin.altTimer, plugin.defaultDoorTimer);
 
@@ -587,7 +587,7 @@ public class LockettePlayerListener implements Listener {
 
         // Check owner only.
         if (plugin.isOwner(block, player)) {
-            plugin.toggleSingleDoor(block);
+            plugin.doorUtils.toggleSingleDoor(block);
             return (false);
         }
 

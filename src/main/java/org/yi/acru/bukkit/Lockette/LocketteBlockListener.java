@@ -80,7 +80,7 @@ public class LocketteBlockListener implements Listener {
                     Lockette.log.info("[" + plugin.getDescription().getName() + "] " + player.getName() + " has released a container.");
                     //}
                     //else Lockette.log.info("[" + plugin.getDescription().getName() + "] " + player.getName() + " has released a door.");
-                    plugin.removeUUIDMetadata(sign);
+                    plugin.signUtil.removeUUIDMetadata(sign);
 
                     plugin.localizedMessage(player, null, "msg-owner-release");
                     return;
@@ -97,7 +97,7 @@ public class LocketteBlockListener implements Listener {
                     if (snoop) {
                         plugin.log.info("[" + plugin.getDescription().getName() + "] (Admin) " + player.getName() + " has broken open a container owned by " + sign.getLine(1) + "!");
 
-                        plugin.removeUUIDMetadata(sign);
+                        plugin.signUtil.removeUUIDMetadata(sign);
                         plugin.localizedMessage(player, plugin.broadcastBreakTarget, "msg-admin-release", sign.getLine(1));
                         return;
                     }
@@ -120,7 +120,7 @@ public class LocketteBlockListener implements Listener {
 
                 Sign sign2 = (Sign) signBlock.getState();
                 if (plugin.isOwner(sign2, player)) {
-                    plugin.removeUUIDMetadata(sign);
+                    plugin.signUtil.removeUUIDMetadata(sign);
                     plugin.localizedMessage(player, null, "msg-owner-remove");
                     return;
                 }
@@ -144,7 +144,7 @@ public class LocketteBlockListener implements Listener {
                 if (signBlock != null) {
                     // This block has the sign attached.  (Or the the door above the block.)
                     sign = (Sign) signBlock.getState();
-                    plugin.removeUUIDMetadata(sign);
+                    plugin.signUtil.removeUUIDMetadata(sign);
 
                     plugin.log.info("[" + plugin.getDescription().getName() + "] " + player.getName() + " has released a container.");
                 } else {

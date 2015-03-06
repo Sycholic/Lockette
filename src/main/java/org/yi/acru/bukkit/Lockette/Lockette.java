@@ -37,6 +37,7 @@ import java.util.*;
 import org.apache.commons.lang.mutable.MutableBoolean;
 import org.json.simple.*;
 import org.json.simple.parser.*;
+import org.yi.acru.bukkit.Lockette.Utils.DoorUtils;
 import org.yi.acru.bukkit.Lockette.Utils.NameLookup;
 import org.yi.acru.bukkit.Lockette.Utils.SignUtil;
 
@@ -79,6 +80,7 @@ public class Lockette extends PluginCore {
     private LocketteProperties properties;
     
     public SignUtil signUtil;
+    public DoorUtils doorUtils;
     
     public Lockette() {
         plugin = this;
@@ -91,6 +93,7 @@ public class Lockette extends PluginCore {
         }
         setStuff();
         signUtil = new SignUtil(this);
+        doorUtils = new DoorUtils();
 
         log.info(logName + " Version " + version + " is being enabled!  Yay!  (Core version " + getCoreVersion() + ")");
 
@@ -254,7 +257,7 @@ public class Lockette extends PluginCore {
             String text = ChatColor.stripColor(sign.getLine(0)).toLowerCase();
 
             if (text.equals("[private]") || text.equalsIgnoreCase(altPrivate)) {
-                return getUUIDFromMeta(sign, 1);
+                return signUtil.getUUIDFromMeta(sign, 1);
             } else if (text.equals("[more users]") || text.equalsIgnoreCase(altMoreUsers)) {
                 Block checkBlock = getSignAttachedBlock(block);
 
@@ -263,7 +266,7 @@ public class Lockette extends PluginCore {
 
                     if (signBlock != null) {
                         sign = (Sign) signBlock.getState();
-                        return getUUIDFromMeta(sign, 1);
+                        return signUtil.getUUIDFromMeta(sign, 1);
                     }
                 }
             }
@@ -271,7 +274,7 @@ public class Lockette extends PluginCore {
             Block signBlock = findBlockOwner(block);
             if (signBlock != null) {
                 Sign sign = (Sign) signBlock.getState();
-                return getUUIDFromMeta(sign, 1);
+                return signUtil.getUUIDFromMeta(sign, 1);
             }
         }
 
@@ -1089,114 +1092,8 @@ public class Lockette extends PluginCore {
         block.setData(face);
     }
 
-    // Toggle all doors.  (Used by rightclick action to get door list.)
-    protected List<Block> toggleDoors(Block block, Block keyBlock, boolean wooden, boolean trap) {
-        List<Block> list = new ArrayList<>();
 
-        toggleDoorBase(block, keyBlock, !trap, wooden, list);
-        try {
-            if (!wooden) {
-                block.getWorld().playEffect(block.getLocation(), Effect.DOOR_TOGGLE, 0);
-            }
-        } catch (NoSuchFieldError | NoSuchMethodError | NoClassDefFoundError ex) {
-        }
 
-        return (list);
-    }
-
-    // Toggle one door.  (Used only by pre-561 builds to fix for bug.)
-    // Now also used to fix doors.
-    protected void toggleSingleDoor(Block block) {
-        int type = block.getTypeId();
-        //List<Block> list = new ArrayList<Block>();
-
-        if (BlockUtil.isInList(type, BlockUtil.materialListJustDoors)) {
-            toggleDoorBase(block, null, true, false, null);
-        } else if (BlockUtil.isInList(type, BlockUtil.materialListTrapDoors)
-                || BlockUtil.isInList(type, BlockUtil.materialListGates)) {
-            toggleDoorBase(block, null, false, false, null);
-        }
-        //return(list);
-    }
-
-    // Toggle half door, or trap door.  (Used by automatic door closer.)
-    protected void toggleHalfDoor(Block block, boolean effect) {
-        int type = block.getTypeId();
-		//List<Block> list = new ArrayList<Block>();
-
-        //toggleDoor(block, null, false, false, null);
-        //return(list);
-        if (BlockUtil.isInList(type, BlockUtil.materialListDoors)) {
-            block.setData((byte) (block.getData() ^ 4));
-            try {
-                if (effect) {
-                    block.getWorld().playEffect(block.getLocation(), Effect.DOOR_TOGGLE, 0);
-                }
-            } catch (NoSuchFieldError | NoSuchMethodError | NoClassDefFoundError ex) {
-            }
-        }
-    }
-
-    // Main recursive function for toggling a door pair.  (No good for trap doors.)
-    private void toggleDoorBase(Block block, Block keyBlock, boolean iterateUpDown, boolean skipDoor, List<Block> list) {
-        Block checkBlock;
-
-        // Toggle this door.
-        if (list != null) {
-            list.add(block);
-        }
-        if (!skipDoor) {
-            block.setData((byte) (block.getData() ^ 4));
-        }
-
-        // Check up and down.
-        if (iterateUpDown) {
-            checkBlock = block.getRelative(BlockFace.UP);
-            if (checkBlock.getTypeId() == block.getTypeId()) {
-                toggleDoorBase(checkBlock, null, false, skipDoor, list);
-            }
-
-            checkBlock = block.getRelative(BlockFace.DOWN);
-            if (checkBlock.getTypeId() == block.getTypeId()) {
-                toggleDoorBase(checkBlock, null, false, skipDoor, list);
-            }
-        }
-
-        // Check around the originating block, in the order NESW.
-        if (keyBlock != null) {
-            checkBlock = block.getRelative(BlockFace.NORTH);
-            if (checkBlock.getTypeId() == block.getTypeId()) {
-                if (((checkBlock.getX() == keyBlock.getX()) && (checkBlock.getZ() == keyBlock.getZ()))
-                        || ((block.getX() == keyBlock.getX()) && (block.getZ() == keyBlock.getZ()))) {
-                    toggleDoorBase(checkBlock, null, true, false, list);
-                }
-            }
-
-            checkBlock = block.getRelative(BlockFace.EAST);
-            if (checkBlock.getTypeId() == block.getTypeId()) {
-                if (((checkBlock.getX() == keyBlock.getX()) && (checkBlock.getZ() == keyBlock.getZ()))
-                        || ((block.getX() == keyBlock.getX()) && (block.getZ() == keyBlock.getZ()))) {
-                    toggleDoorBase(checkBlock, null, true, false, list);
-                }
-            }
-
-            checkBlock = block.getRelative(BlockFace.SOUTH);
-            if (checkBlock.getTypeId() == block.getTypeId()) {
-                if (((checkBlock.getX() == keyBlock.getX()) && (checkBlock.getZ() == keyBlock.getZ()))
-                        || ((block.getX() == keyBlock.getX()) && (block.getZ() == keyBlock.getZ()))) {
-                    toggleDoorBase(checkBlock, null, true, false, list);
-                }
-            }
-
-            checkBlock = block.getRelative(BlockFace.WEST);
-            if (checkBlock.getTypeId() == block.getTypeId()) {
-                if (((checkBlock.getX() == keyBlock.getX()) && (checkBlock.getZ() == keyBlock.getZ()))
-                        || ((block.getX() == keyBlock.getX()) && (block.getZ() == keyBlock.getZ()))) {
-                    toggleDoorBase(checkBlock, null, true, false, list);
-                }
-            }
-        }
-    }
 
     //********************************************************************************************************************
     // Start of utility section
@@ -1294,20 +1191,9 @@ public class Lockette extends PluginCore {
 
 
 
-    private UUID getUUIDFromMeta(Sign sign, int index) {
-        if (sign.hasMetadata(META_KEY)) {
-            List<MetadataValue> list = sign.getMetadata(META_KEY);
-            // should be only one MetadataValue	
-            return ((UUID[]) list.get(0).value())[index - 1];
-        }
-        return null;
-    }
 
-    void removeUUIDMetadata(Sign sign) {
-        if (sign.hasMetadata(META_KEY)) {
-            sign.removeMetadata(META_KEY, plugin);
-        }
-    }
+
+
 
     private boolean oldFormatCheck(String signname, String pname) {
         signname = ChatColor.stripColor(signname);
@@ -1368,7 +1254,7 @@ public class Lockette extends PluginCore {
 
             // not old hack UUID format and just player name?
             // then convert the existing name to uuid then compare uuid
-            if (!sign.hasMetadata(META_KEY) || getUUIDFromMeta(sign, index) == null) {
+            if (!sign.hasMetadata(META_KEY) || signUtil.getUUIDFromMeta(sign, index) == null) {
                 if (DEBUG) {
                     log.info("[Lockette] Checking for original format for " + checkline);
                 }
@@ -1403,7 +1289,7 @@ public class Lockette extends PluginCore {
                 sign.update();
             }
 
-            uuid = getUUIDFromMeta(sign, index);
+            uuid = signUtil.getUUIDFromMeta(sign, index);
 
             if (DEBUG) {
                 log.info("[Lockette] uuid on the sign = " + uuid);
@@ -1426,7 +1312,7 @@ public class Lockette extends PluginCore {
                     if (DEBUG) {
                         log.info("[Lockette] removing bad UUID");
                     }
-                    removeUUIDMetadata(sign);
+                    signUtil.removeUUIDMetadata(sign);
                 }
             } else { // check the name history
                 NameLookup lookup = new NameLookup();
