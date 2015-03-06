@@ -19,7 +19,7 @@ import org.yi.acru.bukkit.BlockUtil;
 
 public class LocketteInventoryListener implements Listener {
 
-    private Lockette plugin;
+    private final Lockette plugin;
     public LocketteInventoryListener(Lockette instance) {
         this.plugin = instance;
     }

@@ -16,7 +16,7 @@ import org.bukkit.block.Block;
 
 public class LocketteDoorCloser implements Runnable {
 
-    private Lockette plugin;
+    private final Lockette plugin;
     private int doorTask = -1;
     private final PriorityQueue<closeTask> closeTaskList = new PriorityQueue<closeTask>();
 
@@ -62,6 +62,7 @@ public class LocketteDoorCloser implements Runnable {
         }
     }
 
+    @Override
     public void run() {
         if (closeTaskList.isEmpty()) {
             return;
@@ -166,6 +167,7 @@ public class LocketteDoorCloser implements Runnable {
             effect = taskEffect;
         }
 
+        @Override
         public int compareTo(closeTask arg) {
             return (time.compareTo(arg.time));
         }

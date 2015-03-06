@@ -29,14 +29,7 @@ import org.bukkit.entity.Player;
 import org.yi.acru.bukkit.PluginCore;
 import org.yi.acru.bukkit.BlockUtil;
 
-import org.bukkit.metadata.*;
-
-import java.io.*;
-import java.net.*;
-import java.util.*;
 import org.apache.commons.lang.mutable.MutableBoolean;
-import org.json.simple.*;
-import org.json.simple.parser.*;
 import org.yi.acru.bukkit.Lockette.Utils.DoorUtils;
 import org.yi.acru.bukkit.Lockette.Utils.NameLookup;
 import org.yi.acru.bukkit.Lockette.Utils.SignUtil;
@@ -48,8 +41,8 @@ public class Lockette extends PluginCore {
     private Lockette plugin;
     private boolean enabled = false;
     
-    private String logName;
-    private String version;
+    public String logName;
+    public String version;
 
     private MutableBoolean uuidSupport = new MutableBoolean(false);
     private boolean registered = false;
@@ -1218,7 +1211,7 @@ public class Lockette extends PluginCore {
             // no uuid support? then just compare name against typed
             if (!uuidSupport.booleanValue()) {	// 
                 if (DEBUG) {
-                    plugin.log.info("[Lockette] NO UUID support, doing old name checking.");
+                    log.info("[Lockette] NO UUID support, doing old name checking.");
                 }
                 //return checkline.split(":")[0].trim().equals(player.getName());
                 String pname = player.getName();
@@ -1229,7 +1222,7 @@ public class Lockette extends PluginCore {
             UUID uuid = null;
             String name = getPlayerName(line);
             if (DEBUG) {
-                plugin.log.info("[Lockette] Name on the sign is : " + name);
+                log.info("[Lockette] Name on the sign is : " + name);
             }
 
             if (isHackFormat(line)) {
@@ -1238,13 +1231,13 @@ public class Lockette extends PluginCore {
                 try {
                     uuid = getPlayerUUID(line);
                 } catch (IllegalArgumentException e) {
-                    log.info("[" + plugin.getDescription().getName() + "] Invalid Player UUID!");
+                    log.info(logName + " Invalid Player UUID!");
                     return false;
                 }
                 if (uuid != null && update) {
                     OfflinePlayer p = Bukkit.getOfflinePlayer(uuid);
                     if (DEBUG) {
-                        plugin.log.info("[Lockette] updating the old hacked format for " + p);
+                        log.info("[Lockette] updating the old hacked format for " + p);
                     }
                     signUtil.setLine(sign, index, name, p);
                 }
@@ -1270,7 +1263,7 @@ public class Lockette extends PluginCore {
                     String against = checkline.split(":")[0].trim();
                     if (oldFormatCheck(against, pname)) {
                         if (DEBUG) {
-                            plugin.log.info("[Lockette] Partial match! Converting original format for " + player.getName() + " name = " + checkline);
+                            log.info("[Lockette] Partial match! Converting original format for " + player.getName() + " name = " + checkline);
                         }
                         signUtil.setLine(sign, index, player.getName(), player);
                     }

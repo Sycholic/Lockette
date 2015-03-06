@@ -8,7 +8,6 @@ package org.yi.acru.bukkit.Lockette;
 //Imports.
 import java.util.List;
 
-import org.bukkit.Material;
 import org.bukkit.block.Block;
 import org.bukkit.block.BlockState;
 import org.bukkit.event.EventHandler;
@@ -22,7 +21,7 @@ import org.yi.acru.bukkit.BlockUtil;
 
 public class LocketteWorldListener implements Listener {
 
-    private Lockette plugin;
+    private final Lockette plugin;
 
     public LocketteWorldListener(Lockette instance) {
         plugin = instance;

@@ -61,7 +61,7 @@ public class LockettePrefixListener implements Listener {
                 event.setLine(1, sign.getLine(1));
                 event.setLine(2, sign.getLine(2));
                 event.setLine(3, sign.getLine(3));
-                plugin.log.info("[" + plugin.getDescription().getName() + "] " + player.getName() + " just tried to change a non-editable sign. (Bukkit bug, or plugin conflict?)");
+                plugin.log.info(plugin.logName + " " + player.getName() + " just tried to change a non-editable sign. (Bukkit bug, or plugin conflict?)");
                 return;
             }
         } else if (typeSignPost) {
@@ -69,7 +69,7 @@ public class LockettePrefixListener implements Listener {
         } else {
             // Not a sign, wtf!
             event.setCancelled(true);
-            plugin.log.info("[" + plugin.getDescription().getName() + "] " + player.getName() + " just tried to set text for a non-sign. (Bukkit bug, or hacked client?)");
+            plugin.log.info(plugin.logName + " " + player.getName() + " just tried to set text for a non-sign. (Bukkit bug, or hacked client?)");
             return;
         }
 

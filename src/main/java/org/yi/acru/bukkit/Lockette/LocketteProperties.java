@@ -21,7 +21,7 @@ import static org.yi.acru.bukkit.PluginCore.log;
  */
 public class LocketteProperties {
 
-    private Lockette plugin;
+    private final Lockette plugin;
     public LocketteProperties(Lockette instance) {
         this.plugin = instance;
     }
@@ -31,7 +31,7 @@ public class LocketteProperties {
         //@SuppressWarnings("unchecked") Not needed anymore i guess.
     protected void loadProperties(boolean reload) {
         if (reload) {
-            log.info("[" + plugin.getDescription().getName() + "] Reloading plugin configuration files.");
+            log.info(plugin.logName + " Reloading plugin configuration files.");
             plugin.reloadConfig();
         }
 
@@ -78,7 +78,7 @@ public class LocketteProperties {
         // Start a scheduled task, for closing doors.
         if (plugin.protectDoors || plugin.protectTrapDoors) {
             if (plugin.doorCloser.start()) {
-                log.severe("[" + plugin.getDescription().getName() + "] Failed to register door closing task!");
+                log.severe(plugin.logName + " Failed to register door closing task!");
             }
         } else {
             plugin.doorCloser.stop();
@@ -92,7 +92,7 @@ public class LocketteProperties {
         // Don't write this option back out if it doesn't exist, and write a warning if it is enabled.
         plugin.debugMode = properties.getBoolean("enable-debug", false);
         if (plugin.debugMode) {
-            log.warning("[" + plugin.getDescription().getName() + "] Debug mode is enabled, so Lockette chests are NOT secure.");
+            log.warning(plugin.logName + " Debug mode is enabled, so Lockette chests are NOT secure.");
         }
 
         //directPlacement = true;
@@ -122,7 +122,7 @@ public class LocketteProperties {
             propChanged = true;
         }
         if (!plugin.customBlockList.isEmpty()) {
-            log.info("[" + plugin.getDescription().getName() + "] Custom lockable block list: " + plugin.customBlockList.toString());
+            log.info(plugin.logName + " Custom lockable block list: " + plugin.customBlockList.toString());
         }
 
         // Customizable disabled plugin link list.
@@ -134,7 +134,7 @@ public class LocketteProperties {
             propChanged = true;
         }
         if (!plugin.disabledPluginList.isEmpty()) {
-            log.info("[" + plugin.getDescription().getName() + "] Ignoring linked plugins: " + plugin.disabledPluginList.toString());
+            log.info(plugin.logName + " Ignoring linked plugins: " + plugin.disabledPluginList.toString());
         }
 
         plugin.broadcastSnoopTarget = properties.getString("broadcast-snoop-target");
@@ -185,13 +185,13 @@ public class LocketteProperties {
         try {
             plugin.strings.load(stringsFile);
         } catch (InvalidConfigurationException ex) {
-            log.warning("[" + plugin.getDescription().getName() + "] Error loading " + fileName + ": " + ex.getMessage());
+            log.warning(plugin.logName + " Error loading " + fileName + ": " + ex.getMessage());
 
             if (!fileName.equals("strings-en.yml")) {
                 loadStrings(reload, "strings-en.yml");
                 return;
             } else {
-                log.warning("[" + plugin.getDescription().getName() + "] Returning to default strings.");
+                log.warning(plugin.logName + " Returning to default strings.");
             }
         } catch (IOException ex) {
         }
@@ -220,9 +220,9 @@ public class LocketteProperties {
         // Report language.
         tempString = plugin.strings.getString("language");
         if ((tempString == null) || tempString.isEmpty()) {
-            log.info("[" + plugin.getDescription().getName() + "] Loading strings file " + fileName);
+            log.info(plugin.logName + " Loading strings file " + fileName);
         } else {
-            log.info("[" + plugin.getDescription().getName() + "] Loading strings file for " + tempString + " by " + plugin.strings.getString("author"));
+            log.info(plugin.logName + " Loading strings file for " + tempString + " by " + plugin.strings.getString("author"));
         }
 
         // Load in the alternate sign strings.
