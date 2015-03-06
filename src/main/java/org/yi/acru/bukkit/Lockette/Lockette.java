@@ -6,12 +6,10 @@
 package org.yi.acru.bukkit.Lockette;
 
 // Imports.
-import java.io.File;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.UUID;
-import java.util.logging.Level;
 
 import org.bukkit.Bukkit;
 import org.bukkit.ChatColor;
@@ -25,9 +23,7 @@ import org.bukkit.block.Sign;
 
 import org.bukkit.command.Command;
 import org.bukkit.command.CommandSender;
-import org.bukkit.configuration.InvalidConfigurationException;
 import org.bukkit.configuration.file.FileConfiguration;
-import org.bukkit.configuration.file.YamlConfiguration;
 import org.bukkit.entity.Player;
 
 import org.yi.acru.bukkit.PluginCore;
@@ -41,6 +37,8 @@ import java.util.*;
 import org.apache.commons.lang.mutable.MutableBoolean;
 import org.json.simple.*;
 import org.json.simple.parser.*;
+import org.yi.acru.bukkit.Lockette.Utils.NameLookup;
+import org.yi.acru.bukkit.Lockette.Utils.SignUtil;
 
 public class Lockette extends PluginCore {
 
@@ -48,6 +46,9 @@ public class Lockette extends PluginCore {
 
     private Lockette plugin;
     private boolean enabled = false;
+    
+    private String logName;
+    private String version;
 
     private MutableBoolean uuidSupport = new MutableBoolean(false);
     private boolean registered = false;
@@ -74,8 +75,11 @@ public class Lockette extends PluginCore {
     protected FileConfiguration strings = null;
     protected final HashMap<String, Block> playerList = new HashMap<String, Block>();
 
-    private final String META_KEY = "LocketteUUIDs";
+    /*private*/ static final String META_KEY = "LocketteUUIDs";
     private LocketteProperties properties;
+    
+    public SignUtil signUtil;
+    
     public Lockette() {
         plugin = this;
     }
@@ -85,8 +89,10 @@ public class Lockette extends PluginCore {
         if (enabled) {
             return;
         }
+        setStuff();
+        signUtil = new SignUtil(this);
 
-        log.info("[" + getDescription().getName() + "] Version " + this.getDescription().getVersion() + " is being enabled!  Yay!  (Core version " + getCoreVersion() + ")");
+        log.info(logName + " Version " + version + " is being enabled!  Yay!  (Core version " + getCoreVersion() + ")");
 
         // Check build version.
         final int recBuild = 2771;
@@ -128,11 +134,11 @@ public class Lockette extends PluginCore {
         float bukkitminver = 1.8F;
 
         if (bukkitver < bukkitminver) {
-            log.severe("[" + getDescription().getName() + "] Detected Bukkit build [" + bukkitVersion + "], but requires version [" + bukkitminver + "] or greater!");
-            log.severe("[" + getDescription().getName() + "] Aborting enable!");
+            log.severe(logName + " Detected Bukkit build [" + bukkitVersion + "], but requires version [" + bukkitminver + "] or greater!");
+            log.severe(logName + " Aborting enable!");
             return;
         } else {
-            log.info("[" + getDescription().getName() + "] Detected Bukkit version [" + bukkitVersion + "] ok.");
+            log.info(logName + " Detected Bukkit version [" + bukkitVersion + "] ok.");
         }
 
         // Load properties and strings.
@@ -154,7 +160,7 @@ public class Lockette extends PluginCore {
         }
 
         // All done.
-        log.info("[" + getDescription().getName() + "] Ready to protect your containers.");
+        log.info(logName + " Ready to protect your containers.");
         enabled = true;
     }
 
@@ -166,7 +172,7 @@ public class Lockette extends PluginCore {
         log.info(this.getDescription().getName() + " is being disabled...  ;.;");
 
         if (protectDoors || protectTrapDoors) {
-            log.info("[" + getDescription().getName() + "] Closing all automatic doors.");
+            log.info(logName + " Closing all automatic doors.");
             doorCloser.cleanup();
         }
 
@@ -1286,40 +1292,7 @@ public class Lockette extends PluginCore {
         return UUID.fromString(getPlayerUUIDString(str));
     }
 
-    void setLine(Sign sign, int index, String typed) {
-        // check whether we should continue with uuid support or not.
-        OfflinePlayer player = null;
-        if (!typed.isEmpty() && typed.indexOf("[") != 0) {
-            String id = ChatColor.stripColor(typed.replaceAll("&([0-9A-Fa-f])", ""));
-            player = Bukkit.getOfflinePlayer(id);
-        }
 
-        // if player is "null", then typed string will just be set.
-        setLine(sign, index, typed, player);
-    }
-
-    void setLine(Sign sign, int index, String typed, OfflinePlayer player) {
-        // set whatever typed on the sign anyway.
-        String cline = typed.replaceAll("&([0-9A-Fa-f])", "\u00A7$1");
-        sign.setLine(index, cline);
-        sign.update(true);
-
-        UUID[] uuids = null;
-        if (!sign.hasMetadata(META_KEY)) {
-            uuids = new UUID[3];
-            sign.setMetadata(META_KEY, new FixedMetadataValue(plugin, uuids));
-        } else {
-            List<MetadataValue> list = sign.getMetadata(META_KEY);
-            // should be only one MetadataValue	
-            uuids = (UUID[]) list.get(0).value();
-        }
-        uuids[index - 1] = (player != null) ? player.getUniqueId() : null;
-        if (DEBUG) {
-            plugin.log.info("[Lockette] setting the line " + index + " to " + cline);
-            plugin.log.info("[Lockette] corresponding player is " + player);
-            plugin.log.info("[Lockette] uuid has been attached: " + uuids[index - 1]);
-        }
-    }
 
     private UUID getUUIDFromMeta(Sign sign, int index) {
         if (sign.hasMetadata(META_KEY)) {
@@ -1387,7 +1360,7 @@ public class Lockette extends PluginCore {
                     if (DEBUG) {
                         plugin.log.info("[Lockette] updating the old hacked format for " + p);
                     }
-                    setLine(sign, index, name, p);
+                    signUtil.setLine(sign, index, name, p);
                 }
                 // update sign for later uuid check!
                 sign.update();
@@ -1404,7 +1377,7 @@ public class Lockette extends PluginCore {
                     if (DEBUG) {
                         log.info("[Lockette] converting original format for " + oplayer + " name = " + checkline);
                     }
-                    setLine(sign, index, line, oplayer);
+                    signUtil.setLine(sign, index, line, oplayer);
                 } else {
                     // partial check with long name.
                     String pname = player.getName();
@@ -1413,7 +1386,7 @@ public class Lockette extends PluginCore {
                         if (DEBUG) {
                             plugin.log.info("[Lockette] Partial match! Converting original format for " + player.getName() + " name = " + checkline);
                         }
-                        setLine(sign, index, player.getName(), player);
+                        signUtil.setLine(sign, index, player.getName(), player);
                     }
                     // if even partial matching is not found, leave it as is.
 					/*
@@ -1456,14 +1429,15 @@ public class Lockette extends PluginCore {
                     removeUUIDMetadata(sign);
                 }
             } else { // check the name history
-                List<String> names = getPreviousNames(player.getUniqueId());
+                NameLookup lookup = new NameLookup();
+                List<String> names = lookup.getPreviousNames(player.getUniqueId());
                 for (String n : names) {
                     if (n.equalsIgnoreCase(name)) { // match!
                         if (DEBUG) {
                             log.info("[Lockette] Found the match in the name history!");
                         }
 
-                        setLine(sign, index, player.getName(), player);
+                        signUtil.setLine(sign, index, player.getName(), player);
                         return true;
                     }
                 }
@@ -1558,34 +1532,28 @@ public class Lockette extends PluginCore {
         return false;
     }
 
-    private final String NAME_HISTORY_URL = "https://api.mojang.com/user/profiles/";
-    private final JSONParser jsonParser = new JSONParser();
 
-    private List<String> getPreviousNames(UUID uuid) {
-        String name = null;
-        List<String> list = new ArrayList<>();
-
-        try {
-            if (name == null) {
-                HttpURLConnection connection = (HttpURLConnection) new URL(NAME_HISTORY_URL + uuid.toString().replace("-", "") + "/names").openConnection();
-                JSONArray array = (JSONArray) jsonParser.parse(new InputStreamReader(connection.getInputStream()));
-
-                Iterator<JSONObject> iterator = array.iterator();
-                while (iterator.hasNext()) {
-                    JSONObject obj = (JSONObject) iterator.next();
-                    list.add((String) obj.get("name"));
-                }
-            }
-        } catch (IOException | ParseException ioe) {
-            log.info("[Lockette] Failed to get Name history!");
-        }
-        return list;
-    }
     public MutableBoolean getUUIDSupport() {
         return uuidSupport;
     }
     
     public LocketteProperties getLocketteProperties() {
         return properties;
+    }
+
+    private void setStuff() {
+        StringBuilder builder = new StringBuilder();
+        
+        builder.append("[")
+            .append(getDescription().getName())
+        .append("]");
+        logName = builder.toString();
+        version = getDescription().getVersion();
+    }
+    public String getMETA_KEY() {
+        return META_KEY;
+    }
+    public boolean getDEBUG() {
+        return DEBUG;
     }
 }

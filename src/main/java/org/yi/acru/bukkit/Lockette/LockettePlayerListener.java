@@ -160,10 +160,10 @@ public class LockettePlayerListener implements Listener {
                             plugin.log.info("[Lockette] player name = " + player.getName());
                         }
                         //sign.setLine(line, id);
-                        plugin.setLine(sign, line, id);
+                        plugin.signUtil.setLine(sign, line, id);
                     } else //sign.setLine(line, "");
                     {
-                        plugin.setLine(sign, line, "");
+                        plugin.signUtil.setLine(sign, line, "");
                     }
                     sign.update();
 

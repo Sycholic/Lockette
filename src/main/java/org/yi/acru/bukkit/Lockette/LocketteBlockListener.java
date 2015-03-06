@@ -301,7 +301,7 @@ public class LocketteBlockListener implements Listener {
                         }
 
                         sign.setLine(0, plugin.altPrivate);
-                        plugin.setLine(sign, 1, player.getName());
+                        plugin.signUtil.setLine(sign, 1, player.getName());
 
                         sign.setLine(2, "");
                         sign.setLine(3, "");
@@ -1019,7 +1019,7 @@ public class LocketteBlockListener implements Listener {
                 if (plugin.DEBUG) {
                     plugin.log.info("[Lockette] Setting palyer's name : " + player.getName());
                 }
-                plugin.setLine(sign, 1, player.getName());
+                plugin.signUtil.setLine(sign, 1, player.getName());
                 event.setLine(1, player.getName());
                 sign.update(true);
             } else { 			// addming creating a sign for someone else.
@@ -1027,7 +1027,7 @@ public class LocketteBlockListener implements Listener {
                 if (plugin.DEBUG) {
                     plugin.log.info("[Lockette] Setting other's name : " + event.getLine(1));
                 }
-                plugin.setLine(sign, 1, event.getLine(1));
+                plugin.signUtil.setLine(sign, 1, event.getLine(1));
                 event.setLine(1, event.getLine(1));
             }
 
@@ -1041,9 +1041,9 @@ public class LocketteBlockListener implements Listener {
                 Sign sign = (Sign) block.getState();
 
                 sign.setLine(0, event.getLine(0));
-                plugin.setLine(sign, 1, event.getLine(1));
-                plugin.setLine(sign, 2, event.getLine(2));
-                plugin.setLine(sign, 3, event.getLine(3));
+                plugin.signUtil.setLine(sign, 1, event.getLine(1));
+                plugin.signUtil.setLine(sign, 2, event.getLine(2));
+                plugin.signUtil.setLine(sign, 3, event.getLine(3));
                 sign.update(true);
             } else {
                 block.setData(face);
@@ -1160,9 +1160,9 @@ public class LocketteBlockListener implements Listener {
                 sign = (Sign) block.getState();
 
                 sign.setLine(0, event.getLine(0));
-                plugin.setLine(sign, 1, event.getLine(1));
-                plugin.setLine(sign, 2, event.getLine(2));
-                plugin.setLine(sign, 3, event.getLine(2));
+                plugin.signUtil.setLine(sign, 1, event.getLine(1));
+                plugin.signUtil.setLine(sign, 2, event.getLine(2));
+                plugin.signUtil.setLine(sign, 3, event.getLine(2));
 
                 sign.update(true);
 
