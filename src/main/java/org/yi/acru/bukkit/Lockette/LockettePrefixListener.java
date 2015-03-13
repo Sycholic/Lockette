@@ -6,6 +6,7 @@
 package org.yi.acru.bukkit.Lockette;
 
 // Imports.
+import java.util.logging.Level;
 import org.bukkit.ChatColor;
 import org.bukkit.Material;
 import org.bukkit.block.Block;
@@ -20,7 +21,7 @@ import org.bukkit.event.block.SignChangeEvent;
 
 public class LockettePrefixListener implements Listener {
 
-    private Lockette plugin;
+    private final Lockette plugin;
 
     public LockettePrefixListener(Lockette instance) {
         plugin = instance;
@@ -53,7 +54,7 @@ public class LockettePrefixListener implements Listener {
                 // Cancel it!  Also, set event text to sign text, just in case.
                 // And check for this later in queue.
                 if (plugin.DEBUG) {
-                    plugin.log.info("[Lockette] Sign already exists, resetting");
+                    Lockette.log.info("[Lockette] Sign already exists, resetting");
                 }
 
                 event.setCancelled(true);
@@ -61,7 +62,7 @@ public class LockettePrefixListener implements Listener {
                 event.setLine(1, sign.getLine(1));
                 event.setLine(2, sign.getLine(2));
                 event.setLine(3, sign.getLine(3));
-                plugin.log.info(plugin.logName + " " + player.getName() + " just tried to change a non-editable sign. (Bukkit bug, or plugin conflict?)");
+                Lockette.log.log(Level.INFO, "{0} {1} just tried to change a non-editable sign. (Bukkit bug, or plugin conflict?)", new Object[]{plugin.logName, player.getName()});
                 return;
             }
         } else if (typeSignPost) {
@@ -69,7 +70,7 @@ public class LockettePrefixListener implements Listener {
         } else {
             // Not a sign, wtf!
             event.setCancelled(true);
-            plugin.log.info(plugin.logName + " " + player.getName() + " just tried to set text for a non-sign. (Bukkit bug, or hacked client?)");
+            Lockette.log.log(Level.INFO, "{0} {1} just tried to set text for a non-sign. (Bukkit bug, or hacked client?)", new Object[]{plugin.logName, player.getName()});
             return;
         }
 

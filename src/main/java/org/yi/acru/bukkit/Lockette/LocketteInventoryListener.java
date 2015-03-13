@@ -32,7 +32,6 @@ public class LocketteInventoryListener implements Listener {
     //**************************************************************************
     // Start of event section
     private boolean isProtected(Inventory inv, boolean allowEveryone) {
-        //plugin.log.info("35:isProtected( " + inv + " - " + allowEveryone);
         if (!plugin.blockHopper) {
             return false;
         }
@@ -40,21 +39,17 @@ public class LocketteInventoryListener implements Listener {
         InventoryHolder holder = inv.getHolder();
 
         if (holder instanceof DoubleChest) {
-            //plugin.log.info("43:instanceof DoubleChest Logic true");
             holder = ((DoubleChest) holder).getLeftSide();
         }
 
         if (holder instanceof BlockState) {
-            //plugin.log.info("48:instanceof BlockState Logic true");
             Block block = ((BlockState) holder).getBlock();
             int type = block.getTypeId();
             if (BlockUtil.isInList(type, BlockUtil.materialListNonDoors)
                     || plugin.isInList(type, plugin.customBlockList)) {
-                //plugin.log.info("53:isInList logic true");
                 return (allowEveryone && plugin.isEveryone(block)) ? false : plugin.isProtected(block);
             }
         }
-        //plugin.log.info("58:isProtected returning false.");
         return false;
     }
 
@@ -109,7 +104,6 @@ public class LocketteInventoryListener implements Listener {
                 }
             }
         }
-        //plugin.log.info("passThrough(" + srcOwner + " : " + meOwner + " : " + destOwner + ")");
         return (srcOwner == meOwner & meOwner == destOwner)
                 || ((srcOwner == null) && (destOwner == null));
                 //|| ((srcOwner == meOwner) && (destOwner == null))
@@ -123,14 +117,11 @@ public class LocketteInventoryListener implements Listener {
         Inventory src = event.getSource();
         Inventory dest = event.getDestination();
         Inventory me = event.getInitiator();
-        //plugin.log.info("onInventoryItemMove event called");
         if (passThrough(src, dest, me)) {
-            //plugin.log.info("passThrough is true.");
             return;
         }
         if (isProtected(event.getSource(), true)
                 || isProtected(event.getDestination(), true)) {
-            //plugin.log.info("isProtected() of onInventoryItemMove event is canceling");
             event.setCancelled(true);
         }
     }

@@ -9,6 +9,7 @@ import java.io.File;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.logging.Level;
 import org.bukkit.Material;
 import org.bukkit.configuration.InvalidConfigurationException;
 import org.bukkit.configuration.file.FileConfiguration;
@@ -31,7 +32,7 @@ public class LocketteProperties {
         //@SuppressWarnings("unchecked") Not needed anymore i guess.
     protected void loadProperties(boolean reload) {
         if (reload) {
-            log.info(plugin.logName + " Reloading plugin configuration files.");
+            log.log(Level.INFO, "{0} Reloading plugin configuration files.", plugin.logName);
             plugin.reloadConfig();
         }
 
@@ -78,7 +79,7 @@ public class LocketteProperties {
         // Start a scheduled task, for closing doors.
         if (plugin.protectDoors || plugin.protectTrapDoors) {
             if (plugin.doorCloser.start()) {
-                log.severe(plugin.logName + " Failed to register door closing task!");
+                log.log(Level.SEVERE, "{0} Failed to register door closing task!", plugin.logName);
             }
         } else {
             plugin.doorCloser.stop();
@@ -92,7 +93,7 @@ public class LocketteProperties {
         // Don't write this option back out if it doesn't exist, and write a warning if it is enabled.
         plugin.debugMode = properties.getBoolean("enable-debug", false);
         if (plugin.debugMode) {
-            log.warning(plugin.logName + " Debug mode is enabled, so Lockette chests are NOT secure.");
+            log.log(Level.WARNING, "{0} Debug mode is enabled, so Lockette chests are NOT secure.", plugin.logName);
         }
 
         //directPlacement = true;
@@ -112,7 +113,7 @@ public class LocketteProperties {
         // Customizable protected block list.
         plugin.customBlockList = (List<Object>) properties.getList("custom-lockable-block-list");
         if (plugin.customBlockList == null) {
-            plugin.customBlockList = new ArrayList<Object>(3);
+            plugin.customBlockList = new ArrayList<>(3);
             plugin.customBlockList.add(Material.ENCHANTMENT_TABLE.getId());
             plugin.customBlockList.add(Material.JUKEBOX.getId());
             plugin.customBlockList.add(Material.DIAMOND_BLOCK.getId());
@@ -122,19 +123,19 @@ public class LocketteProperties {
             propChanged = true;
         }
         if (!plugin.customBlockList.isEmpty()) {
-            log.info(plugin.logName + " Custom lockable block list: " + plugin.customBlockList.toString());
+            log.log(Level.INFO, "{0} Custom lockable block list: {1}", new Object[]{plugin.logName, plugin.customBlockList.toString()});
         }
 
         // Customizable disabled plugin link list.
         plugin.disabledPluginList = (List<Object>) properties.getList("linked-plugin-ignore-list");
         if (plugin.disabledPluginList == null) {
-            plugin.disabledPluginList = new ArrayList<Object>(1);
+            plugin.disabledPluginList = new ArrayList<>(1);
             plugin.disabledPluginList.add("mcMMO");
             properties.set("linked-plugin-ignore-list", plugin.disabledPluginList);
             propChanged = true;
         }
         if (!plugin.disabledPluginList.isEmpty()) {
-            log.info(plugin.logName + " Ignoring linked plugins: " + plugin.disabledPluginList.toString());
+            log.log(Level.INFO, "{0} Ignoring linked plugins: {1}", new Object[]{plugin.logName, plugin.disabledPluginList.toString()});
         }
 
         plugin.broadcastSnoopTarget = properties.getString("broadcast-snoop-target");
@@ -185,13 +186,13 @@ public class LocketteProperties {
         try {
             plugin.strings.load(stringsFile);
         } catch (InvalidConfigurationException ex) {
-            log.warning(plugin.logName + " Error loading " + fileName + ": " + ex.getMessage());
+            log.log(Level.WARNING, "{0} Error loading {1}: {2}", new Object[]{plugin.logName, fileName, ex.getMessage()});
 
             if (!fileName.equals("strings-en.yml")) {
                 loadStrings(reload, "strings-en.yml");
                 return;
             } else {
-                log.warning(plugin.logName + " Returning to default strings.");
+                log.log(Level.WARNING, "{0} Returning to default strings.", plugin.logName);
             }
         } catch (IOException ex) {
         }
@@ -220,9 +221,9 @@ public class LocketteProperties {
         // Report language.
         tempString = plugin.strings.getString("language");
         if ((tempString == null) || tempString.isEmpty()) {
-            log.info(plugin.logName + " Loading strings file " + fileName);
+            log.log(Level.INFO, "{0} Loading strings file {1}", new Object[]{plugin.logName, fileName});
         } else {
-            log.info(plugin.logName + " Loading strings file for " + tempString + " by " + plugin.strings.getString("author"));
+            log.log(Level.INFO, "{0} Loading strings file for {1} by {2}", new Object[]{plugin.logName, tempString, plugin.strings.getString("author")});
         }
 
         // Load in the alternate sign strings.

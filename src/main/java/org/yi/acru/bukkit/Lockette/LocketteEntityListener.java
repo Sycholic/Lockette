@@ -5,7 +5,6 @@
 //
 package org.yi.acru.bukkit.Lockette;
 
-// Imports.
 import java.util.*;
 import org.bukkit.block.Block;
 import org.bukkit.event.EventHandler;
@@ -29,18 +28,13 @@ public class LocketteEntityListener implements Listener {
         pm.registerEvents(this, plugin);
     }
 
-    //********************************************************************************************************************
     // Start of event section
     @EventHandler(priority = EventPriority.LOW, ignoreCancelled = true)
     public void onEntityExplode(EntityExplodeEvent event) {
         if (event.isCancelled()) {
             return;
         }
-
- //int x;//, count = event.blockList().size();
-        //Block block;
-// Check the block list for any protected blocks, and cancel the event if any are found.
-// Check the block list for any protected blocks, and cancel the event if any are found.
+        // Check the block list for any protected blocks, and cancel the event if any are found.
         Iterator<Block> it = event.blockList().iterator();
         while (it.hasNext()) {
             Block block = it.next();
@@ -54,32 +48,5 @@ public class LocketteEntityListener implements Listener {
                 }
             }
         }
-
-        /* Check the block list for any protected blocks, and cancel the event if any are found.
-        for (x = 0; x < event.blockList().size(); ++x) {
-
-            if (Lockette.explosionProtectionAll) {
-
-                block = event.blockList().get(x);
-
-                if (Lockette.isProtected(block)) {
-                    //event.setCancelled(true);
-                    //return;
-                    event.blockList().remove(x);
-                    --x;
-                    //--count;
-                    continue;
-                }
-
-                if (BlockUtil.isInList(block.getTypeId(), BlockUtil.materialListNonDoors)) {
-                    //event.setCancelled(true);
-                    //return;
-                    event.blockList().remove(x);
-                    --x;
-                    //--count;
-                    continue;
-                }
-            }
-        }*/
     }
 }

@@ -5,9 +5,9 @@
 //
 package org.yi.acru.bukkit.Lockette;
 
-// Imports.
 import java.util.HashSet;
 import java.util.List;
+import java.util.logging.Level;
 
 import org.bukkit.ChatColor;
 import org.bukkit.Material;
@@ -42,7 +42,6 @@ public class LockettePlayerListener implements Listener {
         pm.registerEvents(this, plugin);
     }
 
-    //********************************************************************************************************************
     // Start of event section
     @EventHandler(priority = EventPriority.NORMAL, ignoreCancelled = true)
     public void onPlayerCommandPreprocess(PlayerCommandPreprocessEvent event) {
@@ -72,7 +71,7 @@ public class LockettePlayerListener implements Listener {
             }
 
             if (command[1].equalsIgnoreCase("version")) {
-                player.sendMessage(ChatColor.RED + "Lockette version " + plugin.getDescription().getVersion() + " loaded.  (Core: " + plugin.getCoreVersion() + ")");
+                player.sendMessage(ChatColor.RED + "Lockette version " + plugin.getDescription().getVersion() + " loaded.  (Core: " + Lockette.getCoreVersion() + ")");
                 return;
             }
 
@@ -116,7 +115,7 @@ public class LockettePlayerListener implements Listener {
                 } else if (text.equals("[more users]") || text.equalsIgnoreCase(plugin.altMoreUsers)) {
                     privateSign = false;
 
-                    Block checkBlock = plugin.getSignAttachedBlock(block);
+                    Block checkBlock = Lockette.getSignAttachedBlock(block);
                     if (checkBlock == null) {
                         plugin.localizedMessage(player, null, "msg-error-edit");
                         return;
@@ -156,8 +155,8 @@ public class LockettePlayerListener implements Listener {
                         String id = (!plugin.colorTags) ? command[2].replaceAll("&([0-9A-Fa-f])", "") : command[2];
                         // the owner is allowed to change the 1st line
                         if (plugin.DEBUG) {
-                            plugin.log.info("[Lockette] striped name = " + command[2].replaceAll("&([0-9A-Fa-f])", ""));
-                            plugin.log.info("[Lockette] player name = " + player.getName());
+                            Lockette.log.log(Level.INFO, "[Lockette] striped name = {0}", command[2].replaceAll("&([0-9A-Fa-f])", ""));
+                            Lockette.log.log(Level.INFO, "[Lockette] player name = {0}", player.getName());
                         }
                         //sign.setLine(line, id);
                         plugin.signUtil.setLine(sign, line, id);
@@ -308,7 +307,6 @@ public class LockettePlayerListener implements Listener {
 
                         if (hasAttachedTrapDoor(block)) {
                             event.setUseInteractedBlock(Result.DENY);
-                            return;
                         }
                     }
                 }
@@ -335,7 +333,6 @@ public class LockettePlayerListener implements Listener {
 
                     event.setUseInteractedBlock(Result.DENY);
                     event.setUseItemInHand(Result.DENY);
-                    return;
                 }
             }
         }
@@ -408,7 +405,7 @@ public class LockettePlayerListener implements Listener {
          }
          */
         if (allow) {
-            List<Block> list = plugin.doorUtils.toggleDoors(block, plugin.getSignAttachedBlock(signBlock), wooden, trap);
+            List<Block> list = plugin.doorUtils.toggleDoors(block, Lockette.getSignAttachedBlock(signBlock), wooden, trap);
 
             int delta = plugin.getSignOption(signBlock, "timer", plugin.altTimer, plugin.defaultDoorTimer);
 
@@ -437,7 +434,7 @@ public class LockettePlayerListener implements Listener {
         // Check if it is our sign that was clicked.
         if (text.equals("[private]") || text.equalsIgnoreCase(plugin.altPrivate)) {
         } else if (text.equals("[more users]") || text.equalsIgnoreCase(plugin.altMoreUsers)) {
-            Block checkBlock = plugin.getSignAttachedBlock(block);
+            Block checkBlock = Lockette.getSignAttachedBlock(block);
             if (checkBlock == null) {
                 return;
             }
@@ -529,7 +526,7 @@ public class LockettePlayerListener implements Listener {
                 }
 
                 if (snoop) {
-                    plugin.log.info("[" + plugin.getDescription().getName() + "] (Admin) " + player.getName() + " has bypassed a door owned by " + sign.getLine(1));
+                    Lockette.log.log(Level.INFO, "[{0}] (Admin) {1} has bypassed a door owned by {2}", new Object[]{plugin.getDescription().getName(), player.getName(), sign.getLine(1)});
 
                     plugin.localizedMessage(player, null, "msg-admin-bypass", sign.getLine(1));
                     return (true);
@@ -541,7 +538,7 @@ public class LockettePlayerListener implements Listener {
             }
 
             if (snoop) {
-                plugin.log.info("[" + plugin.getDescription().getName() + "] (Admin) " + player.getName() + " has snooped around in a container owned by " + sign.getLine(1) + "!");
+                Lockette.log.log(Level.INFO, "[{0}] (Admin) {1} has snooped around in a container owned by {2}!", new Object[]{plugin.getDescription().getName(), player.getName(), sign.getLine(1)});
 
                 plugin.localizedMessage(player, plugin.broadcastSnoopTarget, "msg-admin-snoop", sign.getLine(1));
                 return (true);

@@ -18,7 +18,7 @@ public class LocketteDoorCloser implements Runnable {
 
     private final Lockette plugin;
     private int doorTask = -1;
-    private final PriorityQueue<closeTask> closeTaskList = new PriorityQueue<closeTask>();
+    private final PriorityQueue<closeTask> closeTaskList = new PriorityQueue<>();
 
     public LocketteDoorCloser(Lockette instance) {
         plugin = instance;

@@ -10,10 +10,10 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.UUID;
+import java.util.logging.Level;
 
 import org.bukkit.Bukkit;
 import org.bukkit.ChatColor;
-import org.bukkit.Effect;
 import org.bukkit.Location;
 import org.bukkit.Material;
 import org.bukkit.OfflinePlayer;
@@ -38,13 +38,13 @@ public class Lockette extends PluginCore {
 
     boolean DEBUG = false;
 
-    private Lockette plugin;
+    private final Lockette plugin;
     private boolean enabled = false;
     
     public String logName;
     public String version;
 
-    private MutableBoolean uuidSupport = new MutableBoolean(false);
+    private final MutableBoolean uuidSupport = new MutableBoolean(false);
     private boolean registered = false;
     private final LocketteBlockListener blockListener = new LocketteBlockListener(this);
     private final LocketteEntityListener entityListener = new LocketteEntityListener(this);
@@ -67,7 +67,7 @@ public class Lockette extends PluginCore {
     protected List<Object> customBlockList = null, disabledPluginList = null;
 
     protected FileConfiguration strings = null;
-    protected final HashMap<String, Block> playerList = new HashMap<String, Block>();
+    protected final HashMap<String, Block> playerList = new HashMap<>();
 
     /*private*/ static final String META_KEY = "LocketteUUIDs";
     private LocketteProperties properties;
@@ -88,7 +88,7 @@ public class Lockette extends PluginCore {
         signUtil = new SignUtil(this);
         doorUtils = new DoorUtils();
 
-        log.info(logName + " Version " + version + " is being enabled!  Yay!  (Core version " + getCoreVersion() + ")");
+        log.log(Level.INFO, "{0} Version {1} is being enabled!  Yay!  (Core version {2})", new Object[]{logName, version, getCoreVersion()});
 
         // Check build version.
         final int recBuild = 2771;
@@ -130,11 +130,11 @@ public class Lockette extends PluginCore {
         float bukkitminver = 1.8F;
 
         if (bukkitver < bukkitminver) {
-            log.severe(logName + " Detected Bukkit build [" + bukkitVersion + "], but requires version [" + bukkitminver + "] or greater!");
-            log.severe(logName + " Aborting enable!");
+            log.log(Level.SEVERE, "{0} Detected Bukkit build [{1}], but requires version [{2}] or greater!", new Object[]{logName, bukkitVersion, bukkitminver});
+            log.log(Level.SEVERE, "{0} Aborting enable!", logName);
             return;
         } else {
-            log.info(logName + " Detected Bukkit version [" + bukkitVersion + "] ok.");
+            log.log(Level.INFO, "{0} Detected Bukkit version [{1}] ok.", new Object[]{logName, bukkitVersion});
         }
 
         // Load properties and strings.
@@ -156,7 +156,7 @@ public class Lockette extends PluginCore {
         }
 
         // All done.
-        log.info(logName + " Ready to protect your containers.");
+        log.log(Level.INFO, "{0} Ready to protect your containers.", logName);
         enabled = true;
     }
 
@@ -165,10 +165,10 @@ public class Lockette extends PluginCore {
         if (!enabled) {
             return;
         }
-        log.info(this.getDescription().getName() + " is being disabled...  ;.;");
+        log.log(Level.INFO, "{0} is being disabled...  ;.;", this.getDescription().getName());
 
         if (protectDoors || protectTrapDoors) {
-            log.info(logName + " Closing all automatic doors.");
+            log.log(Level.INFO, "{0} Closing all automatic doors.", logName);
             doorCloser.cleanup();
         }
 
@@ -227,7 +227,6 @@ public class Lockette extends PluginCore {
                 }
             }
         } else if (findBlockOwner(block) != null) {
-            log.info("--- FindBlockOwner(" + block + ") != null.  Returning TRUE. Lockette thinks something is protecting this.");
             return (true);
         }
 
@@ -533,8 +532,6 @@ public class Lockette extends PluginCore {
     // Version for finding conflicts, when creating a new sign.
     // Ignore the sign being made, in case another plugin has set the text of the sign prematurely.
     protected Block findBlockOwner(Block block, Block ignoreBlock, boolean iterateFurther) {
-        plugin.log.info("FindBlockOwner( " + block + " " + ignoreBlock + " " + iterateFurther + " )");
-
         if (block == null) {
             return null;
         }
@@ -1162,7 +1159,7 @@ public class Lockette extends PluginCore {
 
     private boolean isHackFormat(String line) {
         String[] strs = line.split(":");
-        return (line.indexOf(":") > 1 && strs[1].length() == 36) ? true : false;
+        return (line.indexOf(":") > 1 && strs[1].length() == 36);
     }
 
     private String trim(String str) {
@@ -1219,10 +1216,10 @@ public class Lockette extends PluginCore {
                 return oldFormatCheck(against, pname);
             }
 
-            UUID uuid = null;
+            UUID uuid;
             String name = getPlayerName(line);
             if (DEBUG) {
-                log.info("[Lockette] Name on the sign is : " + name);
+                log.log(Level.INFO, "[Lockette] Name on the sign is : {0}", name);
             }
 
             if (isHackFormat(line)) {
@@ -1231,13 +1228,13 @@ public class Lockette extends PluginCore {
                 try {
                     uuid = getPlayerUUID(line);
                 } catch (IllegalArgumentException e) {
-                    log.info(logName + " Invalid Player UUID!");
+                    log.log(Level.INFO, "{0} Invalid Player UUID!", logName);
                     return false;
                 }
                 if (uuid != null && update) {
                     OfflinePlayer p = Bukkit.getOfflinePlayer(uuid);
                     if (DEBUG) {
-                        log.info("[Lockette] updating the old hacked format for " + p);
+                        log.log(Level.INFO, "[Lockette] updating the old hacked format for {0}", p);
                     }
                     signUtil.setLine(sign, index, name, p);
                 }
@@ -1249,12 +1246,12 @@ public class Lockette extends PluginCore {
             // then convert the existing name to uuid then compare uuid
             if (!sign.hasMetadata(META_KEY) || signUtil.getUUIDFromMeta(sign, index) == null) {
                 if (DEBUG) {
-                    log.info("[Lockette] Checking for original format for " + checkline);
+                    log.log(Level.INFO, "[Lockette] Checking for original format for {0}", checkline);
                 }
                 OfflinePlayer oplayer = Bukkit.getOfflinePlayer(checkline);
                 if (oplayer != null && oplayer.hasPlayedBefore()) {
                     if (DEBUG) {
-                        log.info("[Lockette] converting original format for " + oplayer + " name = " + checkline);
+                        log.log(Level.INFO, "[Lockette] converting original format for {0} name = {1}", new Object[]{oplayer, checkline});
                     }
                     signUtil.setLine(sign, index, line, oplayer);
                 } else {
@@ -1263,7 +1260,7 @@ public class Lockette extends PluginCore {
                     String against = checkline.split(":")[0].trim();
                     if (oldFormatCheck(against, pname)) {
                         if (DEBUG) {
-                            log.info("[Lockette] Partial match! Converting original format for " + player.getName() + " name = " + checkline);
+                            log.log(Level.INFO, "[Lockette] Partial match! Converting original format for {0} name = {1}", new Object[]{player.getName(), checkline});
                         }
                         signUtil.setLine(sign, index, player.getName(), player);
                     }
@@ -1285,8 +1282,8 @@ public class Lockette extends PluginCore {
             uuid = signUtil.getUUIDFromMeta(sign, index);
 
             if (DEBUG) {
-                log.info("[Lockette] uuid on the sign = " + uuid);
-                log.info("[Lockette] player's uuid    = " + player.getUniqueId());
+                log.log(Level.INFO, "[Lockette] uuid on the sign = {0}", uuid);
+                log.log(Level.INFO, "[Lockette] player''s uuid    = {0}", player.getUniqueId());
             }
 
             if (uuid != null) {
@@ -1323,7 +1320,6 @@ public class Lockette extends PluginCore {
             }
         } catch (Exception e) {
             log.info("[Lockette] Something bad happened returning match = false");
-            e.printStackTrace();
         }
 
         return false;

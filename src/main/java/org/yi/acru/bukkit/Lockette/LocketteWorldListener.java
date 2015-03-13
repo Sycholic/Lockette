@@ -32,7 +32,6 @@ public class LocketteWorldListener implements Listener {
         pm.registerEvents(this, plugin);
     }
 
-    //********************************************************************************************************************
     // Start of event section
     @EventHandler(priority = EventPriority.LOW, ignoreCancelled = true)
     public void onStructureGrow(StructureGrowEvent event) {
@@ -43,23 +42,6 @@ public class LocketteWorldListener implements Listener {
         List<BlockState> blockList = event.getBlocks();
         int x, count = blockList.size();
         Block block;
-
-        /*
-         // Structure debug routine, all I touch turns to glass.
-		
-         if(count >= 0){
-         //Lockette.log.info("[Lockette] All I touch turns to glass. (" + count + ")");
-         plugin.getServer().broadcastMessage("[Lockette] All I touch turns to glass. (" + count + ")");
-			
-         for(x = 0; x < count; ++x){
-         block = blockList.get(x).getBlock();
-         block.setTypeId(20);
-         }
-			
-         event.setCancelled(true);
-         return;
-         }
-         */
         // Check the block list for any protected blocks, and cancel the event if any are found.
         for (x = 0; x < count; ++x) {
             block = blockList.get(x).getBlock();

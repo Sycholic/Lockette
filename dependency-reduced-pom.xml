@@ -74,6 +74,7 @@
                   <exclude>com.google.guava</exclude>
                   <exclude>com.googlecode.json-simple</exclude>
                   <exclude>org.yaml</exclude>
+                  <exclude>javax.persistence</exclude>
                 </excludes>
               </artifactSet>
             </configuration>
