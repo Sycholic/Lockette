@@ -30,6 +30,7 @@ import org.yi.acru.bukkit.PluginCore;
 import org.yi.acru.bukkit.BlockUtil;
 
 import org.apache.commons.lang.mutable.MutableBoolean;
+import org.bukkit.plugin.Plugin;
 import org.yi.acru.bukkit.Lockette.Utils.DoorUtils;
 import org.yi.acru.bukkit.Lockette.Utils.NameLookup;
 import org.yi.acru.bukkit.Lockette.Utils.SignUtil;
@@ -38,7 +39,7 @@ public class Lockette extends PluginCore {
 
     boolean DEBUG = false;
 
-    private final Lockette plugin;
+    static Lockette plugin;
     private boolean enabled = false;
     
     public String logName;
@@ -75,15 +76,16 @@ public class Lockette extends PluginCore {
     public SignUtil signUtil;
     public DoorUtils doorUtils;
     
-    public Lockette() {
-        plugin = this;
-    }
+    //public Lockette() {
+     //   plugin = this;
+    //}
 
     @Override
     public void onEnable() {
         if (enabled) {
             return;
         }
+        plugin = this;
         setStuff();
         signUtil = new SignUtil(this);
         doorUtils = new DoorUtils();
@@ -181,7 +183,7 @@ public class Lockette extends PluginCore {
 
     //********************************************************************************************************************
     // Start of public section
-    public boolean isProtected(Block block) {
+    public boolean isProtected2(Block block) {
         if (!enabled) {
             return (false);
         }
@@ -208,6 +210,19 @@ public class Lockette extends PluginCore {
         }
 
         return (false);
+    }
+    /**
+     * Will change more stuff later, doing this to temporarily fix something until we get a better solution
+     * @param block
+     * @return 
+     */
+    @Deprecated
+    public static boolean isProtected(Block block) {
+        return getPlugin().isProtected2(block);
+    }
+    
+    public static Lockette getPlugin() {
+        return plugin;
     }
 
     public String getProtectedOwner(Block block) {
