@@ -199,7 +199,7 @@ public class LocketteBlockListener implements Listener {
     @EventHandler(priority = EventPriority.LOW, ignoreCancelled = true)
     public void onBlockPistonRetract(BlockPistonRetractEvent event) {
 
-        if (!(event.isSticky())) {
+        if (!event.isSticky()) {
             return;
         }
 
