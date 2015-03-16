@@ -102,29 +102,6 @@ public class Lockette extends PluginCore {
             printBuild = (int) build;
         }
 
-        //if((printBuild >= 45) && (printBuild <= 49)) log.info("[" + getDescription().getName() + "] Ignore the warning about using the stupidly long constructor!");
-		/*
-         if(build == 0){
-         log.warning("[" + getDescription().getName() + "] Craftbukkit build unrecognized, please be sure you have build [" + recBuild + "] or greater.");
-         }
-         else if(build < minBuild){
-         log.severe("[" + getDescription().getName() + "] Detected craftbukkit build [" + printBuild + "], but requires requires build [" + minBuild + "] or greater!");
-         log.severe("[" + getDescription().getName() + "] Aborting enable!");
-         return;
-         }
-         else if(build < recBuild){
-         log.warning("[" + getDescription().getName() + "] Detected craftbukkit build [" + printBuild + "], but the recommended build is [" + recBuild + "] or greater.");
-         }
-         else if((build >= 605) && (build <= 612)){
-         log.warning("[" + getDescription().getName() + "] Detected craftbukkit build [" + printBuild + "], but this build is buggy!  Please upgrade to build 617 or greater.");
-         }
-         else if((build >= 685) && (build <= 703)){
-         log.warning("[" + getDescription().getName() + "] Detected craftbukkit build [" + printBuild + "], but this build is buggy!  Please upgrade to build 704 or greater.");
-         }
-         else{
-         log.info("[" + getDescription().getName() + "] Detected craftbukkit build [" + printBuild + "] ok.");
-         }
-         */
         String bukkitVersion = Bukkit.getServer().getClass().getName().split("\\.")[3];
         float bukkitver = Float.parseFloat(bukkitVersion.substring(1, 4).replace("_", "."));
         float bukkitminver = 1.8F;
