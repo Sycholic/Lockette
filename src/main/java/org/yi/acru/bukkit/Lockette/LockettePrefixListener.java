@@ -93,10 +93,9 @@ public class LockettePrefixListener implements Listener {
          */
         // Colorizer code.
         if (plugin.colorTags) {
-            event.setLine(0, event.getLine(0).replaceAll("&([0-9A-Fa-f])", "\u00A7$1"));
-            event.setLine(1, event.getLine(1).replaceAll("&([0-9A-Fa-f])", "\u00A7$1"));
-            event.setLine(2, event.getLine(2).replaceAll("&([0-9A-Fa-f])", "\u00A7$1"));
-            event.setLine(3, event.getLine(3).replaceAll("&([0-9A-Fa-f])", "\u00A7$1"));
+            for (int i = 0; i < 4; i++) {
+                event.setLine(i, event.getLine(i).replaceAll("&([0-9A-Fa-f])", "\u00A7$1"));
+            }
         }
     }
 }
