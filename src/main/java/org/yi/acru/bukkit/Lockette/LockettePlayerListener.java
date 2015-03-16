@@ -181,15 +181,7 @@ public class LockettePlayerListener implements Listener {
         // 2-4 <text> - sign editing
         // link - linking?
         // set <value> <string> - config?
-        plugin.localizedMessage(player, null, "msg-help-command1");
-        plugin.localizedMessage(player, null, "msg-help-command2");
-        plugin.localizedMessage(player, null, "msg-help-command3");
-        plugin.localizedMessage(player, null, "msg-help-command4");
-        plugin.localizedMessage(player, null, "msg-help-command5");
-        plugin.localizedMessage(player, null, "msg-help-command6");
-        plugin.localizedMessage(player, null, "msg-help-command7");
-        plugin.localizedMessage(player, null, "msg-help-command8");
-        plugin.localizedMessage(player, null, "msg-help-command9");
+        sendTheLocalizedMessages(plugin, player);
     }
 
     @EventHandler(priority = EventPriority.LOW, ignoreCancelled = true)
@@ -633,5 +625,17 @@ public class LockettePlayerListener implements Listener {
         }
 
         return (false);
+    }
+
+    private void sendTheLocalizedMessages(Lockette plugin, Player player) {
+        plugin.localizedMessage(player, null, "msg-help-command1");
+        plugin.localizedMessage(player, null, "msg-help-command2");
+        plugin.localizedMessage(player, null, "msg-help-command3");
+        plugin.localizedMessage(player, null, "msg-help-command4");
+        plugin.localizedMessage(player, null, "msg-help-command5");
+        plugin.localizedMessage(player, null, "msg-help-command6");
+        plugin.localizedMessage(player, null, "msg-help-command7");
+        plugin.localizedMessage(player, null, "msg-help-command8");
+        plugin.localizedMessage(player, null, "msg-help-command9");
     }
 }
