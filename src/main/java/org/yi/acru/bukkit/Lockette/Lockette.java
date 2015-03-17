@@ -195,6 +195,16 @@ public class Lockette extends PluginCore {
     // Start of public section
 
     /**
+     * 
+     * @return {@link Lockette}
+     * @deprecated for use with deprecated methods
+     */
+    @Deprecated
+    public static Lockette getLockette() {
+        return plugin;
+    }
+    
+    /**
      * Will change more stuff later, doing this to temporarily fix something until we get a better solution
      * @param block
      * @return boolean
@@ -206,15 +216,6 @@ public class Lockette extends PluginCore {
         return getLockette().locketteAPI.isProtected(block);
     }
     
-    /**
-     * 
-     * @return {@link Lockette}
-     * @deprecated for use with deprecated methods
-     */
-    @Deprecated
-    public static Lockette getLockette() {
-        return plugin;
-    }
 
     @Deprecated
     public static String getProtectedOwner(Block block) {
