@@ -1034,7 +1034,8 @@ public class Lockette extends PluginCore {
         return signname.equalsIgnoreCase(pname.substring(0, length));
     }
 
-    private boolean matchUserUUID(Sign sign, int index, OfflinePlayer player, boolean update) {
+    //Temporarily making this public for now, it was private
+    public boolean matchUserUUID(Sign sign, int index, OfflinePlayer player, boolean update) {
         try {
             String line = sign.getLine(index);
             String checkline = ChatColor.stripColor(line);
@@ -1164,87 +1165,40 @@ public class Lockette extends PluginCore {
         return false;
     }
 
+    //START
+    //START
+    //START
+    
     // need to put this back in because others might be using it.
-    public boolean isOwner(Block block, String name) {
-        return isOwner(block, Bukkit.getOfflinePlayer(name));
+    @Deprecated
+    public static boolean isOwner(Block block, String name) {
+        return getLockette().locketteAPI.isOwner(block, name);
     }
 
-    public boolean isUser(Block block, String name, boolean withGroups) {
-        return isUser(block, Bukkit.getOfflinePlayer(name), withGroups);
+    @Deprecated
+    public static boolean isUser(Block block, String name, boolean withGroups) {
+        return getLockette().locketteAPI.isUser(block, Bukkit.getOfflinePlayer(name), withGroups);
     }
 
-    public boolean isOwner(Block block, OfflinePlayer player) {
-        if (!enabled) {
-            return true;
-        }
-
-        Block checkBlock = findBlockOwner(block);
-        if (checkBlock == null) {
-            return true;
-        }
-
-        Sign sign = (Sign) checkBlock.getState();
-
-        // Check owner only.
-        return matchUserUUID(sign, 1, player, true);
+    @Deprecated
+    public static boolean isOwner(Block block, OfflinePlayer player) {
+        return getLockette().locketteAPI.isOwner(block, player);
+    }
+    
+    @Deprecated
+    public static boolean isOwner(Sign sign, OfflinePlayer player) {
+        return getLockette().locketteAPI.isOwner(sign, player);
     }
 
-    public boolean isOwner(Sign sign, OfflinePlayer player) {
-        // Check owner only.
-        return matchUserUUID(sign, 1, player, true);
+    @Deprecated
+    public static boolean isUser(Block block, OfflinePlayer player, boolean withGroups) {
+        return getLockette().locketteAPI.isUser(block, player, withGroups);
     }
 
-    public boolean isUser(Block block, OfflinePlayer player, boolean withGroups) {
-        if (!enabled) {
-            return true;
-        }
-
-        Block signBlock = findBlockOwner(block);
-
-        if (signBlock == null) {
-            return true;
-        }
-
-        // Check main three users.
-        Sign sign = (Sign) signBlock.getState();
-
-        for (int y = 1; y <= 3; ++y) {
-            String line = sign.getLine(y);
-            if (matchUserUUID(sign, y, player, true)) {// Check if the name is there verbatum.
-                return true;
-            }
-
-            // Check if name is in a group listed on the sign.
-            if (withGroups) {
-                if (plugin.inGroup(block.getWorld(), player.getName(), line)) {
-                    return true;
-                }
-            }
-        }
-
-        // Check for more users.
-        List<Block> list = findBlockUsers(block, signBlock);
-        for (Block blk : list) {
-            sign = (Sign) blk.getState();
-
-            for (int y = 1; y <= 3; y++) {
-                String line = sign.getLine(y);
-                if (matchUserUUID(sign, y, player, true)) {// Check if the name is there verbatum.
-                    return true;
-                }
-
-                // Check if name is in a group listed on the sign.
-                if (withGroups) {
-                    if (plugin.inGroup(block.getWorld(), player.getName(), line)) {
-                        return true;
-                    }
-                }
-            }
-        }
-
-        // User doesn't have permission.
-        return false;
-    }
+    //STOP
+    //STOP
+    //STOP
+    //STOP
 
 
     public MutableBoolean getUUIDSupport() {

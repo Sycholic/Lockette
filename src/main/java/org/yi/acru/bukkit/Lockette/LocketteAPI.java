@@ -10,8 +10,10 @@ import java.util.UUID;
 import org.bukkit.Bukkit;
 import org.bukkit.ChatColor;
 import org.bukkit.Material;
+import org.bukkit.OfflinePlayer;
 import org.bukkit.block.Block;
 import org.bukkit.block.Sign;
+import static org.yi.acru.bukkit.Lockette.Lockette.plugin;
 import static org.yi.acru.bukkit.PluginCore.getSignAttachedBlock;
 
 /**
@@ -149,5 +151,86 @@ public class LocketteAPI {
 
         // Everyone doesn't have permission.
         return (false);
+    }
+    
+        public boolean isOwner(Block block, String name) {
+        return isOwner(block, Bukkit.getOfflinePlayer(name));
+    }
+
+    public boolean isUser(Block block, String name, boolean withGroups) {
+        return isUser(block, Bukkit.getOfflinePlayer(name), withGroups);
+    }
+
+    public boolean isOwner(Block block, OfflinePlayer player) {
+        if (!plugin.isEnabled()) {
+            return true;
+        }
+
+        Block checkBlock = plugin.findBlockOwner(block);
+        if (checkBlock == null) {
+            return true;
+        }
+
+        Sign sign = (Sign) checkBlock.getState();
+
+        // Check owner only.
+        return plugin.matchUserUUID(sign, 1, player, true);
+    }
+
+    public boolean isOwner(Sign sign, OfflinePlayer player) {
+        // Check owner only.
+        return plugin.matchUserUUID(sign, 1, player, true);
+    }
+
+    public boolean isUser(Block block, OfflinePlayer player, boolean withGroups) {
+        if (!plugin.isEnabled()) {
+            return true;
+        }
+
+        Block signBlock = plugin.findBlockOwner(block);
+
+        if (signBlock == null) {
+            return true;
+        }
+
+        // Check main three users.
+        Sign sign = (Sign) signBlock.getState();
+
+        for (int y = 1; y <= 3; ++y) {
+            String line = sign.getLine(y);
+            if (plugin.matchUserUUID(sign, y, player, true)) {// Check if the name is there verbatum.
+                return true;
+            }
+
+            // Check if name is in a group listed on the sign.
+            if (withGroups) {
+                if (plugin.inGroup(block.getWorld(), player.getName(), line)) {
+                    return true;
+                }
+            }
+        }
+
+        // Check for more users.
+        List<Block> list = plugin.findBlockUsers(block, signBlock);
+        for (Block blk : list) {
+            sign = (Sign) blk.getState();
+
+            for (int y = 1; y <= 3; y++) {
+                String line = sign.getLine(y);
+                if (plugin.matchUserUUID(sign, y, player, true)) {// Check if the name is there verbatum.
+                    return true;
+                }
+
+                // Check if name is in a group listed on the sign.
+                if (withGroups) {
+                    if (plugin.inGroup(block.getWorld(), player.getName(), line)) {
+                        return true;
+                    }
+                }
+            }
+        }
+
+        // User doesn't have permission.
+        return false;
     }
 }
