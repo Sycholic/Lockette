@@ -54,6 +54,9 @@ public class Lockette extends PluginCore {
     private LocketteInventoryListener inventoryListener;
     protected LocketteDoorCloser doorCloser;
 
+    public SignUtil signUtil;
+    public DoorUtils doorUtils;
+    
     protected  boolean explosionProtectionAll, rotateChests;
     protected boolean adminSnoop, adminBypass, adminBreak;
     protected boolean protectDoors, protectTrapDoors, usePermissions;
@@ -72,8 +75,6 @@ public class Lockette extends PluginCore {
     /*private*/ static final String META_KEY = "LocketteUUIDs";
     private LocketteProperties properties;
     
-    public SignUtil signUtil;
-    public DoorUtils doorUtils;
     
     //public Lockette() {
      //   plugin = this;
