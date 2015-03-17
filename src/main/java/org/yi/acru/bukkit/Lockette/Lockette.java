@@ -56,6 +56,7 @@ public class Lockette extends PluginCore {
 
     public SignUtil signUtil;
     public DoorUtils doorUtils;
+    public LocketteAPI locketteAPI;
     
     protected  boolean explosionProtectionAll, rotateChests;
     protected boolean adminSnoop, adminBypass, adminBreak;
@@ -82,6 +83,8 @@ public class Lockette extends PluginCore {
 
     @Override
     public void onEnable() {
+        locketteAPI = new LocketteAPI(this);
+        //leave the ordering and spaces till i figure out if anything needs to be started a certain way
         blockListener = new LocketteBlockListener(this);
         entityListener = new LocketteEntityListener(this);
         playerListener = new LockettePlayerListener(this);
@@ -190,44 +193,25 @@ public class Lockette extends PluginCore {
 
     //********************************************************************************************************************
     // Start of public section
-    public boolean isProtected2(Block block) {
-        if (!enabled) {
-            return (false);
-        }
 
-        int type = block.getTypeId();
-
-        if (type == Material.WALL_SIGN.getId()) {
-            Sign sign = (Sign) block.getState();
-            String text = sign.getLine(0).replaceAll("(?i)\u00A7[0-F]", "").toLowerCase();
-
-            if (text.equals("[private]") || text.equalsIgnoreCase(altPrivate)) {
-                return (true);
-            } else if (text.equals("[more users]") || text.equalsIgnoreCase(altMoreUsers)) {
-                Block checkBlock = getSignAttachedBlock(block);
-
-                if (checkBlock != null) {
-                    if (findBlockOwner(checkBlock) != null) {
-                        return (true);
-                    }
-                }
-            }
-        } else if (findBlockOwner(block) != null) {
-            return (true);
-        }
-
-        return (false);
-    }
     /**
      * Will change more stuff later, doing this to temporarily fix something until we get a better solution
      * @param block
-     * @return 
+     * @return boolean
+     * 
+     * @deprecated use {@link #locketteAPI.isProtected()} instead.
      */
     @Deprecated
     public static boolean isProtected(Block block) {
-        return getLockette().isProtected2(block);
+        return getLockette().locketteAPI.isProtected(block);
     }
     
+    /**
+     * 
+     * @return {@link Lockette}
+     * @deprecated for use with deprecated methods
+     */
+    @Deprecated
     public static Lockette getLockette() {
         return plugin;
     }
