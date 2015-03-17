@@ -47,13 +47,13 @@ public class Lockette extends PluginCore {
 
     private final MutableBoolean uuidSupport = new MutableBoolean(false);
     private boolean registered = false;
-    private final LocketteBlockListener blockListener = new LocketteBlockListener(this);
-    private final LocketteEntityListener entityListener = new LocketteEntityListener(this);
-    private final LockettePlayerListener playerListener = new LockettePlayerListener(this);
-    private final LockettePrefixListener prefixListener = new LockettePrefixListener(this);
-    private final LocketteWorldListener worldListener = new LocketteWorldListener(this);
-    private final LocketteInventoryListener inventoryListener = new LocketteInventoryListener(this);
-    protected final LocketteDoorCloser doorCloser = new LocketteDoorCloser(this);
+    private LocketteBlockListener blockListener;
+    private LocketteEntityListener entityListener;
+    private LockettePlayerListener playerListener;
+    private LockettePrefixListener prefixListener;
+    private LocketteWorldListener worldListener;
+    private LocketteInventoryListener inventoryListener;
+    protected LocketteDoorCloser doorCloser;
 
     protected  boolean explosionProtectionAll, rotateChests;
     protected boolean adminSnoop, adminBypass, adminBreak;
@@ -82,6 +82,13 @@ public class Lockette extends PluginCore {
 
     @Override
     public void onEnable() {
+        blockListener = new LocketteBlockListener(this);
+        entityListener = new LocketteEntityListener(this);
+        playerListener = new LockettePlayerListener(this);
+        prefixListener = new LockettePrefixListener(this);
+        worldListener = new LocketteWorldListener(this);
+        inventoryListener = new LocketteInventoryListener(this);
+        doorCloser = new LocketteDoorCloser(this);
         if (enabled) {
             return;
         }
