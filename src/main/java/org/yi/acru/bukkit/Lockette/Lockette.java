@@ -30,7 +30,6 @@ import org.yi.acru.bukkit.PluginCore;
 import org.yi.acru.bukkit.BlockUtil;
 
 import org.apache.commons.lang.mutable.MutableBoolean;
-import org.bukkit.plugin.Plugin;
 import org.yi.acru.bukkit.Lockette.Utils.DoorUtils;
 import org.yi.acru.bukkit.Lockette.Utils.NameLookup;
 import org.yi.acru.bukkit.Lockette.Utils.SignUtil;
