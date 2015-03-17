@@ -216,7 +216,6 @@ public class Lockette extends PluginCore {
         return getLockette().locketteAPI.isProtected(block);
     }
     
-
     @Deprecated
     public static String getProtectedOwner(Block block) {
         return getLockette().locketteAPI.getProtectedOwner(block);
