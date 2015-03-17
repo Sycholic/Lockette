@@ -218,10 +218,10 @@ public class Lockette extends PluginCore {
      */
     @Deprecated
     public static boolean isProtected(Block block) {
-        return getPlugin().isProtected2(block);
+        return getLockette().isProtected2(block);
     }
     
-    public static Lockette getPlugin() {
+    public static Lockette getLockette() {
         return plugin;
     }
 
