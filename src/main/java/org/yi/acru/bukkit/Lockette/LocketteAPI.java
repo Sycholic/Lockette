@@ -64,7 +64,7 @@ public class LocketteAPI {
     }
 
     public String getProtectedOwner(Block block) {
-        return Bukkit.getOfflinePlayer(plugin.getProtectedOwnerUUID(block)).getName();
+        return Bukkit.getOfflinePlayer(getProtectedOwnerUUID(block)).getName();
     }
 
     public UUID getProtectedOwnerUUID(Block block) {
