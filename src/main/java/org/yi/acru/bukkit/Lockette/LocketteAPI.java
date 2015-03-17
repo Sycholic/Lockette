@@ -20,7 +20,7 @@ import static org.yi.acru.bukkit.PluginCore.getSignAttachedBlock;
  */
 public class LocketteAPI {
 
-    private Lockette plugin;
+    private final Lockette plugin;
 
     public LocketteAPI(Lockette plugin) {
         this.plugin = plugin;

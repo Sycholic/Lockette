@@ -83,7 +83,7 @@ public class LocketteBlockListener implements Listener {
                     //else Lockette.log.info("[" + plugin.getDescription().getName() + "] " + player.getName() + " has released a door.");
                     plugin.signUtil.removeUUIDMetadata(sign);
 
-                    plugin.localizedMessage(player, null, "msg-owner-release");
+                    plugin.messageUtils.localizedMessage(player, null, "msg-owner-release");
                     return;
                 }
 
@@ -99,7 +99,7 @@ public class LocketteBlockListener implements Listener {
                         Lockette.log.log(Level.INFO, "[{0}] (Admin) {1} has broken open a container owned by {2}!", new Object[]{plugin.getDescription().getName(), player.getName(), sign.getLine(1)});
 
                         plugin.signUtil.removeUUIDMetadata(sign);
-                        plugin.localizedMessage(player, plugin.broadcastBreakTarget, "msg-admin-release", sign.getLine(1));
+                        plugin.messageUtils.localizedMessage(player, plugin.broadcastBreakTarget, "msg-admin-release", sign.getLine(1));
                         return;
                     }
                 }
@@ -107,7 +107,7 @@ public class LocketteBlockListener implements Listener {
                 event.setCancelled(true);
                 sign.update();
 
-                plugin.localizedMessage(player, null, "msg-user-release-owned", sign.getLine(1));
+                plugin.messageUtils.localizedMessage(player, null, "msg-user-release-owned", sign.getLine(1));
             } else if (text.equalsIgnoreCase("[More Users]") || text.equalsIgnoreCase(plugin.altMoreUsers)) {
                 Block checkBlock = Lockette.getSignAttachedBlock(block);
                 if (checkBlock == null) {
@@ -122,14 +122,14 @@ public class LocketteBlockListener implements Listener {
                 Sign sign2 = (Sign) signBlock.getState();
                 if (plugin.isOwner(sign2, player)) {
                     plugin.signUtil.removeUUIDMetadata(sign);
-                    plugin.localizedMessage(player, null, "msg-owner-remove");
+                    plugin.messageUtils.localizedMessage(player, null, "msg-owner-remove");
                     return;
                 }
 
                 event.setCancelled(true);
                 sign.update();
 
-                plugin.localizedMessage(player, null, "msg-user-remove-owned", sign2.getLine(1));
+                plugin.messageUtils.localizedMessage(player, null, "msg-user-remove-owned", sign2.getLine(1));
             }
         } else {
             Block signBlock = plugin.findBlockOwner(block);
@@ -165,7 +165,7 @@ public class LocketteBlockListener implements Listener {
             //	if(type == Material.WOODEN_DOOR.getId()) plugin.toggleSingleDoor(block);
             //}
 
-            plugin.localizedMessage(player, null, "msg-user-break-owned", sign.getLine(1));
+            plugin.messageUtils.localizedMessage(player, null, "msg-user-break-owned", sign.getLine(1));
         }
     }
 
@@ -259,7 +259,7 @@ public class LocketteBlockListener implements Listener {
 
             event.setCancelled(true);
 
-            plugin.localizedMessage(player, null, "msg-user-conflict-door");
+            plugin.messageUtils.localizedMessage(player, null, "msg-user-conflict-door");
             return;
         }
 
@@ -287,7 +287,7 @@ public class LocketteBlockListener implements Listener {
                             sign.setLine(3, "");
                             sign.update(true);
 
-                            plugin.localizedMessage(player, null, "msg-owner-adduser");
+                            plugin.messageUtils.localizedMessage(player, null, "msg-owner-adduser");
                         } else {
                             event.setCancelled(true);
                         }
@@ -297,7 +297,7 @@ public class LocketteBlockListener implements Listener {
                         // Check for permission first.
                         if (!checkPermissions(player, block, checkBlock)) {
                             event.setCancelled(true);
-                            plugin.localizedMessage(player, null, "msg-error-permission");
+                            plugin.messageUtils.localizedMessage(player, null, "msg-error-permission");
                             return;
                         }
 
@@ -310,7 +310,7 @@ public class LocketteBlockListener implements Listener {
 
                         Lockette.log.log(Level.INFO, "[{0}] {1} has protected a block or door.", new Object[]{plugin.getDescription().getName(), player.getName()});
 
-                        plugin.localizedMessage(player, null, "msg-owner-claim");
+                        plugin.messageUtils.localizedMessage(player, null, "msg-owner-claim");
                     }
                 }
 
@@ -327,7 +327,7 @@ public class LocketteBlockListener implements Listener {
             if (chests > 1) {
                 event.setCancelled(true);
 
-                plugin.localizedMessage(player, null, "msg-user-illegal");
+                plugin.messageUtils.localizedMessage(player, null, "msg-user-illegal");
                 return;
             }
 
@@ -345,14 +345,14 @@ public class LocketteBlockListener implements Listener {
                 // If we got here, then not allowed.
                 event.setCancelled(true);
 
-                plugin.localizedMessage(player, null, "msg-user-resize-owned", sign.getLine(1));
+                plugin.messageUtils.localizedMessage(player, null, "msg-user-resize-owned", sign.getLine(1));
             } else {
                 // Only send one helpful message per user per session.
 
                 if (plugin.playerList.get(player.getName()) == null) {
                     // Associate the user with a non-null block, and print a helpful message.
                     plugin.playerList.put(player.getName(), block);
-                    plugin.localizedMessage(player, null, "msg-help-chest");
+                    plugin.messageUtils.localizedMessage(player, null, "msg-help-chest");
                 }
             }
         }
@@ -370,7 +370,7 @@ public class LocketteBlockListener implements Listener {
 
                     event.setCancelled(true);
 
-                    plugin.localizedMessage(player, null, "msg-user-denied");
+                    plugin.messageUtils.localizedMessage(player, null, "msg-user-denied");
                     return;
                 }
             }
@@ -385,7 +385,7 @@ public class LocketteBlockListener implements Listener {
 
                     event.setCancelled(true);
 
-                    plugin.localizedMessage(player, null, "msg-user-denied");
+                    plugin.messageUtils.localizedMessage(player, null, "msg-user-denied");
                 }
             }
 
@@ -405,13 +405,13 @@ public class LocketteBlockListener implements Listener {
         if (plugin.usingExternalZones()) {
             if (!plugin.canBuild(player, block)) {
 
-                plugin.localizedMessage(player, null, "msg-error-zone", PluginCore.lastZoneDeny());
+                plugin.messageUtils.localizedMessage(player, null, "msg-error-zone", PluginCore.lastZoneDeny());
                 return false;
             }
 
             if (!plugin.canBuild(player, checkBlock)) {
 
-                plugin.localizedMessage(player, null, "msg-error-zone", PluginCore.lastZoneDeny());
+                plugin.messageUtils.localizedMessage(player, null, "msg-error-zone", PluginCore.lastZoneDeny());
                 return false;
             }
         }
@@ -656,7 +656,7 @@ public class LocketteBlockListener implements Listener {
                 if (!plugin.canBuild(player, block)) {
                     event.setLine(0, "[?]");
 
-                    plugin.localizedMessage(player, null, "msg-error-zone", PluginCore.lastZoneDeny());
+                    plugin.messageUtils.localizedMessage(player, null, "msg-error-zone", PluginCore.lastZoneDeny());
                     return;
                 }
             }
@@ -721,7 +721,7 @@ public class LocketteBlockListener implements Listener {
                 if (!create) {
                     event.setLine(0, "[?]");
 
-                    plugin.localizedMessage(player, null, "msg-error-permission");
+                    plugin.messageUtils.localizedMessage(player, null, "msg-error-permission");
                     return;
                 }
             }
@@ -949,13 +949,13 @@ public class LocketteBlockListener implements Listener {
                 event.setLine(0, "[?]");
 
                 if (conflict) {
-                    plugin.localizedMessage(player, null, "msg-error-claim-conflict");
+                    plugin.messageUtils.localizedMessage(player, null, "msg-error-claim-conflict");
                 } else if (zonedeny) {
-                    plugin.localizedMessage(player, null, "msg-error-zone", PluginCore.lastZoneDeny());
+                    plugin.messageUtils.localizedMessage(player, null, "msg-error-zone", PluginCore.lastZoneDeny());
                 } else if (deny) {
-                    plugin.localizedMessage(player, null, "msg-error-permission");
+                    plugin.messageUtils.localizedMessage(player, null, "msg-error-permission");
                 } else {
-                    plugin.localizedMessage(player, null, "msg-error-claim");
+                    plugin.messageUtils.localizedMessage(player, null, "msg-error-claim");
                 }
                 return;
             }
@@ -1054,14 +1054,14 @@ public class LocketteBlockListener implements Listener {
                 Lockette.log.log(Level.INFO, "[{0}] (Admin) {1} has claimed a container for {2}.", new Object[]{plugin.getDescription().getName(), player.getName(), event.getLine(1)});
 
                 if (!plugin.playerOnline(event.getLine(1))) {
-                    plugin.localizedMessage(player, null, "msg-admin-claim-error", event.getLine(1));
+                    plugin.messageUtils.localizedMessage(player, null, "msg-admin-claim-error", event.getLine(1));
                 } else {
-                    plugin.localizedMessage(player, null, "msg-admin-claim", event.getLine(1));
+                    plugin.messageUtils.localizedMessage(player, null, "msg-admin-claim", event.getLine(1));
                 }
             } else {
                 Lockette.log.log(Level.INFO, "[{0}] {1} has claimed a container.", new Object[]{plugin.getDescription().getName(), player.getName()});
 
-                plugin.localizedMessage(player, null, "msg-owner-claim");
+                plugin.messageUtils.localizedMessage(player, null, "msg-owner-claim");
             }
         } else if (text.equalsIgnoreCase("[More Users]") || text.equalsIgnoreCase(plugin.altMoreUsers)) {
             //Player		player = event.getPlayer();
@@ -1140,9 +1140,9 @@ public class LocketteBlockListener implements Listener {
             if (face == 0) {
                 event.setLine(0, "[?]");
                 if (sign != null) {
-                    plugin.localizedMessage(player, null, "msg-error-adduser-owned", sign.getLine(1));
+                    plugin.messageUtils.localizedMessage(player, null, "msg-error-adduser-owned", sign.getLine(1));
                 } else {
-                    plugin.localizedMessage(player, null, "msg-error-adduser");
+                    plugin.messageUtils.localizedMessage(player, null, "msg-error-adduser");
                 }
                 return;
             }
@@ -1171,7 +1171,7 @@ public class LocketteBlockListener implements Listener {
             }
 
             // All done!
-            plugin.localizedMessage(player, null, "msg-owner-adduser");
+            plugin.messageUtils.localizedMessage(player, null, "msg-owner-adduser");
         }
     }
 

@@ -31,6 +31,7 @@ import org.yi.acru.bukkit.BlockUtil;
 
 import org.apache.commons.lang.mutable.MutableBoolean;
 import org.yi.acru.bukkit.Lockette.Utils.DoorUtils;
+import org.yi.acru.bukkit.Lockette.Utils.MessageUtils;
 import org.yi.acru.bukkit.Lockette.Utils.NameLookup;
 import org.yi.acru.bukkit.Lockette.Utils.SignUtil;
 
@@ -57,6 +58,7 @@ public class Lockette extends PluginCore {
     public SignUtil signUtil;
     public DoorUtils doorUtils;
     public LocketteAPI locketteAPI;
+    public MessageUtils messageUtils;
     
     protected  boolean explosionProtectionAll, rotateChests;
     protected boolean adminSnoop, adminBypass, adminBreak;
@@ -66,7 +68,7 @@ public class Lockette extends PluginCore {
     protected int defaultDoorTimer;
     protected String broadcastSnoopTarget, broadcastBreakTarget, broadcastReloadTarget;
 
-    protected boolean msgUser, msgOwner, msgAdmin, msgError, msgHelp;
+    public boolean msgUser, msgOwner, msgAdmin, msgError, msgHelp;
     protected String altPrivate, altMoreUsers, altEveryone, altOperators, altTimer, altFee;
     protected List<Object> customBlockList = null, disabledPluginList = null;
 
@@ -84,6 +86,7 @@ public class Lockette extends PluginCore {
     @Override
     public void onEnable() {
         locketteAPI = new LocketteAPI(this);
+        messageUtils = new MessageUtils(this);
         //leave the ordering and spaces till i figure out if anything needs to be started a certain way
         blockListener = new LocketteBlockListener(this);
         entityListener = new LocketteEntityListener(this);
@@ -178,7 +181,7 @@ public class Lockette extends PluginCore {
             if (args[0].equalsIgnoreCase("reload")) {
                 properties.loadProperties(true);
 
-                localizedMessage(null, broadcastReloadTarget, "msg-admin-reload");
+                messageUtils.localizedMessage(null, broadcastReloadTarget, "msg-admin-reload");
 
                 //String msgString = Lockette.strings.getString("msg-admin-reload");
                 //selectiveBroadcast(Lockette.broadcastReloadTarget, ChatColor.RED + "Lockette: " + msgString);
@@ -264,80 +267,6 @@ public class Lockette extends PluginCore {
 
     //********************************************************************************************************************
     // Start of utility section
-    protected void localizedMessage(Player player, String broadcast, String key) {
-        localizedMessage(player, broadcast, key, null, null);
-    }
-
-    protected void localizedMessage(Player player, String broadcast, String key, String sub) {
-        localizedMessage(player, broadcast, key, sub, null);
-    }
-
-    protected void localizedMessage(Player player, String broadcast, String key, String sub, String num) {
-        String color = "";
-
-        // Filter and color based on message type.
-        if (key.startsWith("msg-user-")) {
-            if (broadcast == null) {
-                if (!msgUser) {
-                    return;
-                }
-            }
-            color = ChatColor.YELLOW.toString();
-        } else if (key.startsWith("msg-owner-")) {
-            if (broadcast == null) {
-                if (!msgOwner) {
-                    return;
-                }
-            }
-            color = ChatColor.GOLD.toString();
-        } else if (key.startsWith("msg-admin-")) {
-            if (broadcast == null) {
-                if (!msgAdmin) {
-                    return;
-                }
-            }
-            color = ChatColor.RED.toString();
-        } else if (key.startsWith("msg-error-")) {
-            if (broadcast == null) {
-                if (!msgError) {
-                    return;
-                }
-            }
-            color = ChatColor.RED.toString();
-        } else if (key.startsWith("msg-help-")) {
-            if (broadcast == null) {
-                if (!msgHelp) {
-                    return;
-                }
-            }
-            color = ChatColor.GOLD.toString();
-        }
-
-        // Fetch the requested message string.
-        String message = strings.getString(key);
-        if ((message == null) || message.isEmpty()) {
-            return;
-        }
-
-        // Do place holder substitution.
-        message = message.replaceAll("&([0-9A-Fa-f])", "\u00A7$1");
-        if (sub != null) {
-            message = message.replaceAll("\\*\\*\\*", sub + color);
-        }
-        if (num != null) {
-            message = message.replaceAll("###", num);
-        }
-        if (player != null) {
-            message = message.replaceAll("@@@", player.getName());
-        }
-
-        // Send out the formatted message.
-        if (broadcast != null) {
-            selectiveBroadcast(broadcast, color + "[Lockette] " + message);
-        } else if (player != null) {
-            player.sendMessage(color + "[Lockette] " + message);
-        }
-    }
 
     // Version for determining if a container is released.
     // Should return non-null if destroying the block will surely cause the the sign to fall off.

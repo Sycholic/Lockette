@@ -66,7 +66,7 @@ public class LockettePlayerListener implements Listener {
 
                 plugin.getLocketteProperties().loadProperties(true);
 
-                plugin.localizedMessage(player, plugin.broadcastReloadTarget, "msg-admin-reload");
+                plugin.messageUtils.localizedMessage(player, plugin.broadcastReloadTarget, "msg-admin-reload");
                 return;
             }
 
@@ -77,7 +77,7 @@ public class LockettePlayerListener implements Listener {
 
             if (command[1].equalsIgnoreCase("fix")) {
                 if (fixDoor(player)) {
-                    plugin.localizedMessage(player, null, "msg-error-fix");
+                    plugin.messageUtils.localizedMessage(player, null, "msg-error-fix");
                 }
                 return;
             }
@@ -97,10 +97,10 @@ public class LockettePlayerListener implements Listener {
 
                 // Check if the selected block is a valid sign.
                 if (block == null) {
-                    plugin.localizedMessage(player, null, "msg-error-edit");
+                    plugin.messageUtils.localizedMessage(player, null, "msg-error-edit");
                     return;
                 } else if (block.getTypeId() != Material.WALL_SIGN.getId()) {
-                    plugin.localizedMessage(player, null, "msg-error-edit");
+                    plugin.messageUtils.localizedMessage(player, null, "msg-error-edit");
                     return;
                 }
 
@@ -117,19 +117,19 @@ public class LockettePlayerListener implements Listener {
 
                     Block checkBlock = Lockette.getSignAttachedBlock(block);
                     if (checkBlock == null) {
-                        plugin.localizedMessage(player, null, "msg-error-edit");
+                        plugin.messageUtils.localizedMessage(player, null, "msg-error-edit");
                         return;
                     }
 
                     Block signBlock = plugin.findBlockOwner(checkBlock);
                     if (signBlock == null) {
-                        plugin.localizedMessage(player, null, "msg-error-edit");
+                        plugin.messageUtils.localizedMessage(player, null, "msg-error-edit");
                         return;
                     }
 
                     owner = (Sign) signBlock.getState();
                 } else {
-                    plugin.localizedMessage(player, null, "msg-error-edit");
+                    plugin.messageUtils.localizedMessage(player, null, "msg-error-edit");
                     return;
                 }
 
@@ -166,10 +166,10 @@ public class LockettePlayerListener implements Listener {
                     }
                     sign.update();
 
-                    plugin.localizedMessage(player, null, "msg-owner-edit");
+                    plugin.messageUtils.localizedMessage(player, null, "msg-owner-edit");
                     return;
                 } else {
-                    plugin.localizedMessage(player, null, "msg-error-edit");
+                    plugin.messageUtils.localizedMessage(player, null, "msg-error-edit");
                     return;
                 }
             }
@@ -415,7 +415,7 @@ public class LockettePlayerListener implements Listener {
             return (false);
         }
         plugin.playerList.put(player.getName(), block);
-        plugin.localizedMessage(player, null, "msg-user-denied-door");
+        plugin.messageUtils.localizedMessage(player, null, "msg-user-denied-door");
         return (false);
     }
 
@@ -447,7 +447,7 @@ public class LockettePlayerListener implements Listener {
             if (!block.equals(plugin.playerList.get(player.getName()))) {
                 // Associate the user with the owned sign.
                 plugin.playerList.put(player.getName(), block);
-                plugin.localizedMessage(player, null, "msg-help-select");
+                plugin.messageUtils.localizedMessage(player, null, "msg-help-select");
             }
         } else {/*
              int fee = getSignOption(signBlock, "fee", Lockette.altFee, 0);
@@ -464,7 +464,7 @@ public class LockettePlayerListener implements Listener {
             if (!block.equals(plugin.playerList.get(player.getName()))) {
                 // Only print this message once as well.
                 plugin.playerList.put(player.getName(), block);
-                plugin.localizedMessage(player, null, "msg-user-touch-owned", sign.getLine(1));
+                plugin.messageUtils.localizedMessage(player, null, "msg-user-touch-owned", sign.getLine(1));
             }
             //}
         }
@@ -489,7 +489,7 @@ public class LockettePlayerListener implements Listener {
             return (false);
         }
         plugin.playerList.put(player.getName(), block);
-        plugin.localizedMessage(player, null, "msg-user-denied");
+        plugin.messageUtils.localizedMessage(player, null, "msg-user-denied");
         return (false);
     }
 
@@ -520,7 +520,7 @@ public class LockettePlayerListener implements Listener {
                 if (snoop) {
                     Lockette.log.log(Level.INFO, "[{0}] (Admin) {1} has bypassed a door owned by {2}", new Object[]{plugin.getDescription().getName(), player.getName(), sign.getLine(1)});
 
-                    plugin.localizedMessage(player, null, "msg-admin-bypass", sign.getLine(1));
+                    plugin.messageUtils.localizedMessage(player, null, "msg-admin-bypass", sign.getLine(1));
                     return (true);
                 }
             }
@@ -532,7 +532,7 @@ public class LockettePlayerListener implements Listener {
             if (snoop) {
                 Lockette.log.log(Level.INFO, "[{0}] (Admin) {1} has snooped around in a container owned by {2}!", new Object[]{plugin.getDescription().getName(), player.getName(), sign.getLine(1)});
 
-                plugin.localizedMessage(player, plugin.broadcastSnoopTarget, "msg-admin-snoop", sign.getLine(1));
+                plugin.messageUtils.localizedMessage(player, plugin.broadcastSnoopTarget, "msg-admin-snoop", sign.getLine(1));
                 return (true);
             }
         }
@@ -628,14 +628,14 @@ public class LockettePlayerListener implements Listener {
     }
 
     private void sendTheLocalizedMessages(Lockette plugin, Player player) {
-        plugin.localizedMessage(player, null, "msg-help-command1");
-        plugin.localizedMessage(player, null, "msg-help-command2");
-        plugin.localizedMessage(player, null, "msg-help-command3");
-        plugin.localizedMessage(player, null, "msg-help-command4");
-        plugin.localizedMessage(player, null, "msg-help-command5");
-        plugin.localizedMessage(player, null, "msg-help-command6");
-        plugin.localizedMessage(player, null, "msg-help-command7");
-        plugin.localizedMessage(player, null, "msg-help-command8");
-        plugin.localizedMessage(player, null, "msg-help-command9");
+        plugin.messageUtils.localizedMessage(player, null, "msg-help-command1");
+        plugin.messageUtils.localizedMessage(player, null, "msg-help-command2");
+        plugin.messageUtils.localizedMessage(player, null, "msg-help-command3");
+        plugin.messageUtils.localizedMessage(player, null, "msg-help-command4");
+        plugin.messageUtils.localizedMessage(player, null, "msg-help-command5");
+        plugin.messageUtils.localizedMessage(player, null, "msg-help-command6");
+        plugin.messageUtils.localizedMessage(player, null, "msg-help-command7");
+        plugin.messageUtils.localizedMessage(player, null, "msg-help-command8");
+        plugin.messageUtils.localizedMessage(player, null, "msg-help-command9");
     }
 }
