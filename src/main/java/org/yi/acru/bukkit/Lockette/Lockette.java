@@ -72,7 +72,7 @@ public class Lockette extends PluginCore {
     protected String altPrivate, altMoreUsers, altEveryone, altOperators, altTimer, altFee;
     protected List<Object> customBlockList = null, disabledPluginList = null;
 
-    protected FileConfiguration strings = null;
+    public FileConfiguration strings = null;
     protected final HashMap<String, Block> playerList = new HashMap<>();
 
     /*private*/ static final String META_KEY = "LocketteUUIDs";
@@ -1269,5 +1269,10 @@ public class Lockette extends PluginCore {
     }
     public boolean getDEBUG() {
         return DEBUG;
+    }
+
+    @Deprecated
+    public void selectiveBroadcastTEMPFIX(String broadcast, String string2) {
+        selectiveBroadcast(broadcast, string2);
     }
 }

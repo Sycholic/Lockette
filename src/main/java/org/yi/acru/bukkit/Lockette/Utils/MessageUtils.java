@@ -89,7 +89,7 @@ public class MessageUtils {
 
         // Send out the formatted message.
         if (broadcast != null) {
-            plugin.selectiveBroadcast(broadcast, color + "[Lockette] " + message);
+            plugin.selectiveBroadcastTEMPFIX(broadcast, color + "[Lockette] " + message);
         } else if (player != null) {
             player.sendMessage(color + "[Lockette] " + message);
         }
