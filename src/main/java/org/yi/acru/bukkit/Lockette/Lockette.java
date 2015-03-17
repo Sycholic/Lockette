@@ -216,92 +216,19 @@ public class Lockette extends PluginCore {
         return plugin;
     }
 
-    public String getProtectedOwner(Block block) {
-        return Bukkit.getOfflinePlayer(getProtectedOwnerUUID(block)).getName();
+    @Deprecated
+    public static String getProtectedOwner(Block block) {
+        return getLockette().locketteAPI.getProtectedOwner(block);
     }
 
-    public UUID getProtectedOwnerUUID(Block block) {
-        if (!enabled) {
-            return (null);
-        }
-
-        int type = block.getTypeId();
-
-        if (type == Material.WALL_SIGN.getId()) {
-            Sign sign = (Sign) block.getState();
-            String text = ChatColor.stripColor(sign.getLine(0)).toLowerCase();
-
-            if (text.equals("[private]") || text.equalsIgnoreCase(altPrivate)) {
-                return signUtil.getUUIDFromMeta(sign, 1);
-            } else if (text.equals("[more users]") || text.equalsIgnoreCase(altMoreUsers)) {
-                Block checkBlock = getSignAttachedBlock(block);
-
-                if (checkBlock != null) {
-                    Block signBlock = findBlockOwner(checkBlock);
-
-                    if (signBlock != null) {
-                        sign = (Sign) signBlock.getState();
-                        return signUtil.getUUIDFromMeta(sign, 1);
-                    }
-                }
-            }
-        } else {
-            Block signBlock = findBlockOwner(block);
-            if (signBlock != null) {
-                Sign sign = (Sign) signBlock.getState();
-                return signUtil.getUUIDFromMeta(sign, 1);
-            }
-        }
-
-        return null;
+    @Deprecated
+    public static UUID getProtectedOwnerUUID(Block block) {
+        return getLockette().locketteAPI.getProtectedOwnerUUID(block);
     }
 
+    @Deprecated
     public boolean isEveryone(Block block) {
-        if (!enabled) {
-            return (true);
-        }
-
-        Block signBlock = findBlockOwner(block);
-
-        if (signBlock == null) {
-            return (true);
-        }
-
-        // Check main three users.
-        Sign sign = (Sign) signBlock.getState();
-        String line;
-        int y;
-
-        for (y = 1; y <= 3; ++y) {
-            if (!sign.getLine(y).isEmpty()) {
-                line = sign.getLine(y).replaceAll("(?i)\u00A7[0-F]", "");
-
-                if (line.equalsIgnoreCase("[Everyone]") || line.equalsIgnoreCase(altEveryone)) {
-                    return (true);
-                }
-            }
-        }
-
-        // Check for more users.
-        List<Block> list = findBlockUsers(block, signBlock);
-        int x, count = list.size();
-
-        for (x = 0; x < count; ++x) {
-            sign = (Sign) list.get(x).getState();
-
-            for (y = 1; y <= 3; ++y) {
-                if (!sign.getLine(y).isEmpty()) {
-                    line = sign.getLine(y).replaceAll("(?i)\u00A7[0-F]", "");
-
-                    if (line.equalsIgnoreCase("[Everyone]") || line.equalsIgnoreCase(altEveryone)) {
-                        return (true);
-                    }
-                }
-            }
-        }
-
-        // Everyone doesn't have permission.
-        return (false);
+        return getLockette().locketteAPI.isEveryone(block);
     }
 
     //********************************************************************************************************************
