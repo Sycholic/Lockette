@@ -24,7 +24,6 @@ import org.bukkit.Material;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.EventPriority;
 import org.bukkit.event.Listener;
-import org.bukkit.plugin.PluginManager;
 
 import org.yi.acru.bukkit.PluginCore;
 import org.yi.acru.bukkit.BlockUtil;
