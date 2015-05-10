@@ -26,9 +26,6 @@ public class LocketteEntityListener implements Listener {
     // Start of event section
     @EventHandler(priority = EventPriority.LOW, ignoreCancelled = true)
     public void onEntityExplode(EntityExplodeEvent event) {
-        if (event.isCancelled()) {
-            return;
-        }
         // Check the block list for any protected blocks, and cancel the event if any are found.
         Iterator<Block> it = event.blockList().iterator();
         while (it.hasNext()) {
