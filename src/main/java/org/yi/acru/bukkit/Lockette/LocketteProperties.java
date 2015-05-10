@@ -30,7 +30,7 @@ public class LocketteProperties {
     
     
         //@SuppressWarnings("unchecked") Not needed anymore i guess.
-    protected void loadProperties(boolean reload) {
+    public void loadProperties(boolean reload) {
         if (reload) {
             log.log(Level.INFO, "{0} Reloading plugin configuration files.", plugin.logName);
             plugin.reloadConfig();

@@ -6,6 +6,12 @@
 package org.yi.acru.bukkit.Lockette;
 
 // Imports.
+import org.yi.acru.bukkit.Lockette.Listeners.LocketteEntityListener;
+import org.yi.acru.bukkit.Lockette.Listeners.LocketteInventoryListener;
+import org.yi.acru.bukkit.Lockette.Listeners.LocketteBlockListener;
+import org.yi.acru.bukkit.Lockette.Listeners.LockettePlayerListener;
+import org.yi.acru.bukkit.Lockette.Listeners.LockettePrefixListener;
+import org.yi.acru.bukkit.Lockette.Listeners.LocketteWorldListener;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -38,7 +44,7 @@ import org.yi.acru.bukkit.Lockette.Utils.SignUtil;
 
 public class Lockette extends PluginCore {
 
-    boolean DEBUG = false;
+    public boolean DEBUG = false;
 
     static Lockette plugin;
     private boolean enabled = false;
@@ -54,27 +60,27 @@ public class Lockette extends PluginCore {
     private LockettePrefixListener prefixListener;
     private LocketteWorldListener worldListener;
     private LocketteInventoryListener inventoryListener;
-    protected LocketteDoorCloser doorCloser;
+    public LocketteDoorCloser doorCloser;
 
     public SignUtil signUtil;
     public DoorUtils doorUtils;
     public LocketteAPI locketteAPI;
     public MessageUtils messageUtils;
     
-    protected  boolean explosionProtectionAll, rotateChests;
-    protected boolean adminSnoop, adminBypass, adminBreak;
-    protected boolean protectDoors, protectTrapDoors, usePermissions;
-    protected boolean directPlacement, colorTags, debugMode;
-    protected boolean blockHopper = false;
-    protected int defaultDoorTimer;
-    protected String broadcastSnoopTarget, broadcastBreakTarget, broadcastReloadTarget;
+    public boolean explosionProtectionAll, rotateChests;
+    public boolean adminSnoop, adminBypass, adminBreak;
+    public boolean protectDoors, protectTrapDoors, usePermissions;
+    public boolean directPlacement, colorTags, debugMode;
+    public boolean blockHopper = false;
+    public int defaultDoorTimer;
+    public String broadcastSnoopTarget, broadcastBreakTarget, broadcastReloadTarget;
 
     public boolean msgUser, msgOwner, msgAdmin, msgError, msgHelp;
-    protected String altPrivate, altMoreUsers, altEveryone, altOperators, altTimer, altFee;
-    protected List<Object> customBlockList = null, disabledPluginList = null;
+    public String altPrivate, altMoreUsers, altEveryone, altOperators, altTimer, altFee;
+    public List<Object> customBlockList = null, disabledPluginList = null;
 
     public FileConfiguration strings = null;
-    protected final HashMap<String, Block> playerList = new HashMap<>();
+    public final HashMap<String, Block> playerList = new HashMap<>();
 
     /*private*/ static final String META_KEY = "LocketteUUIDs";
     private LocketteProperties properties;
@@ -248,12 +254,12 @@ public class Lockette extends PluginCore {
     //********************************************************************************************************************
     // Start of external permissions section
     @Override
-    protected boolean pluginEnableOverride(String pluginName) {
+    public boolean pluginEnableOverride(String pluginName) {
         return (isInList(pluginName, disabledPluginList));
     }
 
     @Override
-    protected boolean usingExternalPermissions() {
+    public boolean usingExternalPermissions() {
         if (!usePermissions) {
             return (false);
         }
@@ -262,17 +268,17 @@ public class Lockette extends PluginCore {
     }
 
     @Override
-    protected boolean usingExternalZones() {
+    public boolean usingExternalZones() {
         return (super.usingExternalZones());
     }
 
     @Override
-    protected String getLocalizedEveryone() {
+    public String getLocalizedEveryone() {
         return (altEveryone);
     }
 
     @Override
-    protected String getLocalizedOperators() {
+    public String getLocalizedOperators() {
         return (altOperators);
     }
 
@@ -282,7 +288,7 @@ public class Lockette extends PluginCore {
     // Version for determining if a container is released.
     // Should return non-null if destroying the block will surely cause the the sign to fall off.
     // Okay for trap doors, though could be optimized.
-    protected Block findBlockOwnerBreak(Block block) {
+    public Block findBlockOwnerBreak(Block block) {
         int type = block.getTypeId();
 
         // Check known block types.
@@ -373,7 +379,7 @@ public class Lockette extends PluginCore {
     }
 
     // Find the owner for any 'block'.
-    protected Block findBlockOwner(Block block) {
+    public Block findBlockOwner(Block block) {
         // Pass to a special version with specific values.
         // Moved this next to the same overloaded function where it belongs.
         return (findBlockOwner(block, null, false));
@@ -381,7 +387,7 @@ public class Lockette extends PluginCore {
 
     // Version for finding conflicts, when creating a new sign.
     // Ignore the sign being made, in case another plugin has set the text of the sign prematurely.
-    protected Block findBlockOwner(Block block, Block ignoreBlock, boolean iterateFurther) {
+    public Block findBlockOwner(Block block, Block ignoreBlock, boolean iterateFurther) {
         if (block == null) {
             return null;
         }
@@ -661,7 +667,7 @@ public class Lockette extends PluginCore {
         return (null);
     }
 
-    protected List<Block> findBlockUsers(Block block, Block signBlock) {
+    public List<Block> findBlockUsers(Block block, Block signBlock) {
         int type = block.getTypeId();
 
         if (BlockUtil.isInList(type, BlockUtil.materialListChests)) {
@@ -815,7 +821,7 @@ public class Lockette extends PluginCore {
         return (list);
     }
 
-    protected int findChestCountNear(Block block) {
+    public int findChestCountNear(Block block) {
         return (findChestCountNearBase(block, (byte) 0));
     }
 
@@ -866,7 +872,7 @@ public class Lockette extends PluginCore {
         return (count);
     }
 
-    protected void rotateChestOrientation(Block block, BlockFace blockFace) {
+    public void rotateChestOrientation(Block block, BlockFace blockFace) {
 
         if (!BlockUtil.isInList(block.getTypeId(), BlockUtil.materialListChests)) {
             return;
@@ -937,7 +943,7 @@ public class Lockette extends PluginCore {
 
     //********************************************************************************************************************
     // Start of utility section
-    protected int getSignOption(Block signBlock, String tag, String altTag, int defaultValue) {
+    public int getSignOption(Block signBlock, String tag, String altTag, int defaultValue) {
         Sign sign = (Sign) signBlock.getState();
 
         // Check main two users.
@@ -995,7 +1001,7 @@ public class Lockette extends PluginCore {
         return (defaultValue);
     }
 
-    protected boolean isInList(Object target, List<Object> list) {
+    public boolean isInList(Object target, List<Object> list) {
         if (list == null) {
             return (false);
         }
