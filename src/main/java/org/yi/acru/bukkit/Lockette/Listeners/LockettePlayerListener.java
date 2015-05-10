@@ -28,13 +28,16 @@ import org.bukkit.event.player.PlayerQuitEvent;
 
 import org.yi.acru.bukkit.BlockUtil;
 import org.yi.acru.bukkit.Lockette.Lockette;
+import org.yi.acru.bukkit.Lockette.LocketteAPI;
 
 public class LockettePlayerListener implements Listener {
 
-    private static Lockette plugin;
+    private final Lockette plugin;
+    private final LocketteAPI locketteAPI;
 
     public LockettePlayerListener(Lockette instance) {
         plugin = instance;
+        locketteAPI = plugin.locketteAPI;
     }
 
     // Start of event section
@@ -128,7 +131,7 @@ public class LockettePlayerListener implements Listener {
                     return;
                 }
 
-                if (plugin.isOwner(owner, player) || plugin.debugMode) {
+                if (locketteAPI.isOwner(owner, player) || plugin.debugMode) {
                     int line = Integer.parseInt(command[1]) - 1;
 
                     // Disallow editing [Private] line 1 here.
@@ -244,9 +247,9 @@ public class LockettePlayerListener implements Listener {
                                 if (type == Material.AIR.getId()) {
                                     boolean place = false;
 
-                                    if (plugin.isProtected(block)) {
+                                    if (locketteAPI.isProtected(block)) {
                                         // Add a users sign only if owner.
-                                        if (plugin.isOwner(block, player)) {
+                                        if (locketteAPI.isOwner(block, player)) {
                                             place = true;
                                         }
                                     } else {
@@ -336,7 +339,7 @@ public class LockettePlayerListener implements Listener {
     //********************************************************************************************************************
     // Start of interact section
     // Returns true if it should be allowed, false if it should be canceled.
-    private static boolean interactDoor(Block block, Player player) {
+    private boolean interactDoor(Block block, Player player) {
         Block signBlock = plugin.findBlockOwner(block);
 
         if (signBlock == null) {
@@ -414,7 +417,7 @@ public class LockettePlayerListener implements Listener {
         return (false);
     }
 
-    private static void interactSign(Block block, Player player) {
+    private void interactSign(Block block, Player player) {
         Sign sign = (Sign) block.getState();
         String text = sign.getLine(0).replaceAll("(?i)\u00A7[0-F]", "").toLowerCase();
 
@@ -438,7 +441,7 @@ public class LockettePlayerListener implements Listener {
 
         // Check owner.
         //if(sign.getLine(1).replaceAll("(?i)\u00A7[0-F]", "").equals(player.getName()) || Lockette.debugMode){			
-        if (plugin.isOwner(sign, player) || plugin.debugMode) {
+        if (locketteAPI.isOwner(sign, player) || plugin.debugMode) {
             if (!block.equals(plugin.playerList.get(player.getName()))) {
                 // Associate the user with the owned sign.
                 plugin.playerList.put(player.getName(), block);
@@ -466,7 +469,7 @@ public class LockettePlayerListener implements Listener {
     }
 
     // Returns true if it should be allowed, false if it should be canceled.
-    private static boolean interactContainer(Block block, Player player) {
+    private boolean interactContainer(Block block, Player player) {
         Block signBlock = plugin.findBlockOwner(block);
 
         if (signBlock == null) {
@@ -490,7 +493,7 @@ public class LockettePlayerListener implements Listener {
 
     // Block is the container or door, signBlock is the owning [Private] sign.
     // Returns true if it should be allowed, false if it should be canceled.
-    private static boolean canInteract(Block block, Block signBlock, Player player, boolean isDoor) {
+    private boolean canInteract(Block block, Block signBlock, Player player, boolean isDoor) {
 		// Check if the block is owned first.
 
         // Moved to outer..
@@ -499,7 +502,7 @@ public class LockettePlayerListener implements Listener {
         String line;
 
         // Check owner and other users
-        if (plugin.isUser(block, player, true)) {
+        if (locketteAPI.isUser(block, player, true)) {
             return true;
         }
 
@@ -539,7 +542,7 @@ public class LockettePlayerListener implements Listener {
     //********************************************************************************************************************
     // Start of utility section
     // Returns true if a door wasn't changed.
-    private static boolean fixDoor(Player player) {
+    private boolean fixDoor(Player player) {
         Block block = player.getTargetBlock((HashSet<Byte>) null, 10);
         int type = block.getTypeId();
         boolean doCheck = false;
@@ -570,7 +573,7 @@ public class LockettePlayerListener implements Listener {
         Sign sign = (Sign) signBlock.getState();
 
         // Check owner only.
-        if (plugin.isOwner(block, player)) {
+        if (locketteAPI.isOwner(block, player)) {
             plugin.doorUtils.toggleSingleDoor(block);
             return (false);
         }
@@ -578,7 +581,7 @@ public class LockettePlayerListener implements Listener {
         return (true);
     }
 
-    public static boolean hasAttachedTrapDoor(Block block) {
+    private boolean hasAttachedTrapDoor(Block block) { //Was public static
         Block checkBlock;
         int type;
         int face;

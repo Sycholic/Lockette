@@ -14,13 +14,16 @@ import org.bukkit.event.Listener;
 import org.bukkit.event.entity.EntityExplodeEvent;
 import org.yi.acru.bukkit.BlockUtil;
 import org.yi.acru.bukkit.Lockette.Lockette;
+import org.yi.acru.bukkit.Lockette.LocketteAPI;
 
 public class LocketteEntityListener implements Listener {
 
     private final Lockette plugin;
+    private final LocketteAPI locketteAPI;
 
     public LocketteEntityListener(Lockette instance) {
         plugin = instance;
+        locketteAPI = plugin.locketteAPI;
     }
 
     // Start of event section
@@ -30,7 +33,7 @@ public class LocketteEntityListener implements Listener {
         Iterator<Block> it = event.blockList().iterator();
         while (it.hasNext()) {
             Block block = it.next();
-            if (plugin.isProtected(block)) {
+            if (locketteAPI.isProtected(block)) {
                 it.remove();
                 continue;
             }

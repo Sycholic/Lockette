@@ -28,13 +28,16 @@ import org.bukkit.event.Listener;
 import org.yi.acru.bukkit.PluginCore;
 import org.yi.acru.bukkit.BlockUtil;
 import org.yi.acru.bukkit.Lockette.Lockette;
+import org.yi.acru.bukkit.Lockette.LocketteAPI;
 
 public class LocketteBlockListener implements Listener {
 
     private final Lockette plugin;
+    private final LocketteAPI locketteAPI;
 
     public LocketteBlockListener(Lockette instance) {
         plugin = instance;
+        locketteAPI = plugin.locketteAPI;
     }
 
     //**********************************************************
@@ -68,7 +71,7 @@ public class LocketteBlockListener implements Listener {
 
                 // Check owner.
                 //if (sign.getLine(1).replaceAll("(?i)\u00A7[0-F]", "").equals(player.getName().substring(0, length))) {
-                if (plugin.isOwner(sign, player)) {
+                if (locketteAPI.isOwner(sign, player)) {
 					//Block		checkBlock = Lockette.getSignAttachedBlock(block);
                     //if(checkBlock == null) checkBlock = block;
 
@@ -115,7 +118,7 @@ public class LocketteBlockListener implements Listener {
                 }
 
                 Sign sign2 = (Sign) signBlock.getState();
-                if (plugin.isOwner(sign2, player)) {
+                if (locketteAPI.isOwner(sign2, player)) {
                     plugin.signUtil.removeUUIDMetadata(sign);
                     plugin.messageUtils.localizedMessage(player, null, "msg-owner-remove");
                     return;
@@ -135,7 +138,7 @@ public class LocketteBlockListener implements Listener {
 
             Sign sign = (Sign) signBlock.getState();
             // Check owner.
-            if (plugin.isOwner(sign, player)) {
+            if (locketteAPI.isOwner(sign, player)) {
                 signBlock = plugin.findBlockOwnerBreak(block);
                 if (signBlock != null) {
                     // This block has the sign attached.  (Or the the door above the block.)
@@ -177,7 +180,7 @@ public class LocketteBlockListener implements Listener {
         for (x = 0; x < count; ++x) {
             checkBlock = blockList.get(x);
 
-            if (plugin.isProtected(checkBlock)) {
+            if (locketteAPI.isProtected(checkBlock)) {
                 event.setCancelled(true);
                 return;
             }
@@ -186,7 +189,7 @@ public class LocketteBlockListener implements Listener {
         // The above misses doors at the end of the chain, in the space the blocks are being pushed into.
         checkBlock = block.getRelative(Lockette.getPistonFacing(block), event.getLength() + 1);
 
-        if (plugin.isProtected(checkBlock)) {
+        if (locketteAPI.isProtected(checkBlock)) {
             event.setCancelled(true);
         }
     }
@@ -212,7 +215,7 @@ public class LocketteBlockListener implements Listener {
         }
         //if(type == Material.TRAP_DOOR.getId()) don't return
 
-        if (plugin.isProtected(checkBlock)) {
+        if (locketteAPI.isProtected(checkBlock)) {
             event.setCancelled(true);
         }
     }
@@ -273,9 +276,9 @@ public class LocketteBlockListener implements Listener {
 
                     Sign sign = (Sign) block.getState();
 
-                    if (plugin.isProtected(checkBlock)) {
+                    if (locketteAPI.isProtected(checkBlock)) {
                         // Add a users sign only if owner.
-                        if (plugin.isOwner(checkBlock, player)) {
+                        if (locketteAPI.isOwner(checkBlock, player)) {
                             sign.setLine(0, plugin.altMoreUsers);
                             sign.setLine(1, plugin.altEveryone);
                             sign.setLine(2, "");
@@ -333,7 +336,7 @@ public class LocketteBlockListener implements Listener {
 
                 Sign sign = (Sign) signBlock.getState();
                 // Check owner.
-                if (plugin.isOwner(sign, player)) {
+                if (locketteAPI.isOwner(sign, player)) {
                     return;
                 }
 
@@ -465,7 +468,7 @@ public class LocketteBlockListener implements Listener {
 
         Sign sign = (Sign) signBlock.getState();
 
-        return plugin.isOwner(sign, player);
+        return locketteAPI.isOwner(sign, player);
     }
 
     /*
@@ -1082,7 +1085,7 @@ public class LocketteBlockListener implements Listener {
                                 sign = (Sign) signBlock.getState();
 
                                 // Check owner.
-                                if (plugin.isOwner(sign, player)) {
+                                if (locketteAPI.isOwner(sign, player)) {
                                     face = block.getData();
                                 }
                             }
@@ -1122,7 +1125,7 @@ public class LocketteBlockListener implements Listener {
                         sign = (Sign) signBlock.getState();
 
                         // Check owner.
-                        if (plugin.isOwner(sign, player)) {
+                        if (locketteAPI.isOwner(sign, player)) {
                             face = BlockUtil.faceList[x];
                             //type = y;
                             break;
@@ -1182,7 +1185,7 @@ public class LocketteBlockListener implements Listener {
         //if(length > 15) length = 15;
         // Check block below for doors or block to side for trapdoors.
         //if (!plugin.isOwner(against, player.getName()))
-        if (!plugin.isOwner(against, player)) {
+        if (!locketteAPI.isOwner(against, player)) {
             return (false);
         }
 
@@ -1196,35 +1199,35 @@ public class LocketteBlockListener implements Listener {
         }
 
         // Check block above door.
-        if (!plugin.isOwner(against.getRelative(BlockFace.UP, 3), player)) {
+        if (!locketteAPI.isOwner(against.getRelative(BlockFace.UP, 3), player)) {
             return (false);
         }
 
         // Check neighboring doors.
         checkBlock = block.getRelative(BlockFace.NORTH);
         if (checkBlock.getTypeId() == block.getTypeId()) {
-            if (!plugin.isOwner(checkBlock, player)) {
+            if (!locketteAPI.isOwner(checkBlock, player)) {
                 return (false);
             }
         }
 
         checkBlock = block.getRelative(BlockFace.EAST);
         if (checkBlock.getTypeId() == block.getTypeId()) {
-            if (!plugin.isOwner(checkBlock, player)) {
+            if (!locketteAPI.isOwner(checkBlock, player)) {
                 return (false);
             }
         }
 
         checkBlock = block.getRelative(BlockFace.SOUTH);
         if (checkBlock.getTypeId() == block.getTypeId()) {
-            if (!plugin.isOwner(checkBlock, player)) {
+            if (!locketteAPI.isOwner(checkBlock, player)) {
                 return (false);
             }
         }
 
         checkBlock = block.getRelative(BlockFace.WEST);
         if (checkBlock.getTypeId() == block.getTypeId()) {
-            if (!plugin.isOwner(checkBlock, player)) {
+            if (!locketteAPI.isOwner(checkBlock, player)) {
                 return (false);
             }
         }
