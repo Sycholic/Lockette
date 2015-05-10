@@ -24,11 +24,6 @@ public class LocketteInventoryListener implements Listener {
         this.plugin = instance;
     }
 
-    protected void registerEvents() {
-        PluginManager pm = this.plugin.getServer().getPluginManager();
-        pm.registerEvents(this, this.plugin);
-    }
-
     //**************************************************************************
     // Start of event section
     private boolean isProtected(Inventory inv, boolean allowEveryone) {

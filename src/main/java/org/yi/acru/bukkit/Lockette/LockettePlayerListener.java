@@ -37,11 +37,6 @@ public class LockettePlayerListener implements Listener {
         plugin = instance;
     }
 
-    protected void registerEvents() {
-        PluginManager pm = plugin.getServer().getPluginManager();
-        pm.registerEvents(this, plugin);
-    }
-
     // Start of event section
     @EventHandler(priority = EventPriority.NORMAL, ignoreCancelled = true)
     public void onPlayerCommandPreprocess(PlayerCommandPreprocessEvent event) {

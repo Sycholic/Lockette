@@ -30,6 +30,7 @@ import org.yi.acru.bukkit.PluginCore;
 import org.yi.acru.bukkit.BlockUtil;
 
 import org.apache.commons.lang.mutable.MutableBoolean;
+import org.bukkit.plugin.PluginManager;
 import org.yi.acru.bukkit.Lockette.Utils.DoorUtils;
 import org.yi.acru.bukkit.Lockette.Utils.MessageUtils;
 import org.yi.acru.bukkit.Lockette.Utils.NameLookup;
@@ -138,12 +139,22 @@ public class Lockette extends PluginCore {
 
         // Reg us some events yo!	
         if (!registered) {
-            blockListener.registerEvents();
+            /*blockListener.registerEvents();
             entityListener.registerEvents();
             playerListener.registerEvents();
             prefixListener.registerEvents();
             worldListener.registerEvents();
-            inventoryListener.registerEvents();
+            inventoryListener.registerEvents();*/
+            
+            PluginManager pm = plugin.getServer().getPluginManager();
+            
+            pm.registerEvents(blockListener, plugin);
+            pm.registerEvents(entityListener, plugin);
+            pm.registerEvents(playerListener, plugin);
+            pm.registerEvents(prefixListener, plugin);
+            pm.registerEvents(worldListener, plugin);
+            pm.registerEvents(inventoryListener, plugin);
+            
             registered = true;
         }
 

@@ -27,10 +27,6 @@ public class LocketteWorldListener implements Listener {
         plugin = instance;
     }
 
-    protected void registerEvents() {
-        PluginManager pm = plugin.getServer().getPluginManager();
-        pm.registerEvents(this, plugin);
-    }
 
     // Start of event section
     @EventHandler(priority = EventPriority.LOW, ignoreCancelled = true)
