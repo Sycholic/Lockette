@@ -18,27 +18,28 @@ import org.bukkit.event.world.StructureGrowEvent;
 
 import org.yi.acru.bukkit.BlockUtil;
 import org.yi.acru.bukkit.Lockette.Lockette;
+import org.yi.acru.bukkit.Lockette.LocketteAPI;
 
 public class LocketteWorldListener implements Listener {
 
     private final Lockette plugin;
+    private final LocketteAPI locketteAPI;
 
     public LocketteWorldListener(Lockette instance) {
         plugin = instance;
+        locketteAPI = plugin.locketteAPI;
     }
 
-
-    // Start of event section
     @EventHandler(priority = EventPriority.LOW, ignoreCancelled = true)
     public void onStructureGrow(StructureGrowEvent event) {
         List<BlockState> blockList = event.getBlocks();
-        int x, count = blockList.size();
-        Block block;
+        int count = blockList.size();
+        
         // Check the block list for any protected blocks, and cancel the event if any are found.
-        for (x = 0; x < count; ++x) {
-            block = blockList.get(x).getBlock();
+        for (int x = 0; x < count; ++x) {
+            Block block = blockList.get(x).getBlock();
 
-            if (plugin.isProtected(block)) {
+            if (locketteAPI.isProtected(block)) {
                 event.setCancelled(true);
                 return;
             }
