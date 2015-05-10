@@ -164,7 +164,7 @@ public class LocketteBlockListener implements Listener {
         }
     }
 
-    @EventHandler(priority = EventPriority.LOW)
+    @EventHandler(priority = EventPriority.LOW, ignoreCancelled = true)
     public void onBlockPistonExtend(BlockPistonExtendEvent event) {
 
         Block block = event.getBlock();
