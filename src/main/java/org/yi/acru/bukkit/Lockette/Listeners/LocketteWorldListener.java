@@ -31,10 +31,6 @@ public class LocketteWorldListener implements Listener {
     // Start of event section
     @EventHandler(priority = EventPriority.LOW, ignoreCancelled = true)
     public void onStructureGrow(StructureGrowEvent event) {
-        if (event.isCancelled()) {
-            return;
-        }
-
         List<BlockState> blockList = event.getBlocks();
         int x, count = blockList.size();
         Block block;
