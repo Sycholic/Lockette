@@ -21,7 +21,7 @@ import static org.yi.acru.bukkit.PluginCore.log;
 
 /**
  *
- * @author Samuel
+ * @author idk
  */
 public class NameLookup {
     private final String NAME_HISTORY_URL = "https://api.mojang.com/user/profiles/";
@@ -33,7 +33,10 @@ public class NameLookup {
 
         try {
             if (name == null) {
-                HttpURLConnection connection = (HttpURLConnection) new URL(NAME_HISTORY_URL + uuid.toString().replace("-", "") + "/names").openConnection();
+                URL url = new URL(NAME_HISTORY_URL + uuid.toString().replace("-", "") + "/names");
+                HttpURLConnection connection = (HttpURLConnection) url.openConnection();
+                connection.setConnectTimeout(5000);
+                connection.setReadTimeout(5000);
                 JSONArray array = (JSONArray) jsonParser.parse(new InputStreamReader(connection.getInputStream()));
 
                 Iterator<JSONObject> iterator = array.iterator();
