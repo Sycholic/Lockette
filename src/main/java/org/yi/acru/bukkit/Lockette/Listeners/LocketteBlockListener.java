@@ -47,11 +47,11 @@ public class LocketteBlockListener implements Listener {
         Block block = event.getBlock();
         int type = block.getTypeId();
 
-        if (event.isCancelled()) {
+        /*if (event.isCancelled()) {
             if (!BlockUtil.isInList(type, BlockUtil.materialListJustDoors)) {
                 return;
             }
-        }
+        }*/
 
         // Someone is breaking a block, lets see if they are allowed.
         if (type == Material.WALL_SIGN.getId()) {
